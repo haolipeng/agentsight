@@ -71,6 +71,12 @@ impl BinaryExecutor {
                 "Failed to get stdout"
             )) as RunnerError)?;
         
+        let stderr = child.stderr.take()
+            .ok_or_else(|| Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other, 
+                "Failed to get stderr"
+            )) as RunnerError)?;
+        
         if let Some(pid) = child.id() {
             debug!("Binary started with PID: Some({})", pid);
         }
@@ -78,6 +84,54 @@ impl BinaryExecutor {
         // Clone needed data for the stream
         let runner_name = self.runner_name.clone();
         let binary_path = self.binary_path.clone();
+        
+        // Spawn a task to read and log stderr
+        let stderr_runner_name = runner_name.clone();
+        let stderr_binary_path = binary_path.clone();
+        tokio::spawn(async move {
+            let mut stderr_reader = BufReader::new(stderr);
+            let mut stderr_line = String::new();
+            
+            loop {
+                stderr_line.clear();
+                match stderr_reader.read_line(&mut stderr_line).await {
+                    Ok(0) => {
+                        // EOF reached
+                        break;
+                    }
+                    Ok(_) => {
+                        let trimmed = stderr_line.trim();
+                        if !trimmed.is_empty() {
+                            // Log stderr output as ERROR for visibility
+                            let runner_info = stderr_runner_name.as_ref()
+                                .map(|name| format!("[{}] ", name))
+                                .unwrap_or_else(|| format!("[{}] ", 
+                                    std::path::Path::new(&stderr_binary_path)
+                                        .file_name()
+                                        .and_then(|n| n.to_str())
+                                        .unwrap_or("unknown")
+                                ));
+                            
+                            // Check severity of the message
+                            if trimmed.contains("Failed") || trimmed.contains("Error") || 
+                               trimmed.contains("cannot") || trimmed.contains("permission denied") {
+                                log::error!("{}STDERR: {}", runner_info, trimmed);
+                            } else if trimmed.contains("warn") || trimmed.contains("Warning") {
+                                log::warn!("{}STDERR: {}", runner_info, trimmed);
+                            } else {
+                                log::info!("{}STDERR: {}", runner_info, trimmed);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        if e.kind() != std::io::ErrorKind::UnexpectedEof {
+                            log::warn!("Error reading stderr: {}", e);
+                        }
+                        break;
+                    }
+                }
+            }
+        });
 
         let stream = async_stream::stream! {
             let mut reader = BufReader::new(stdout);

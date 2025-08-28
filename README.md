@@ -10,9 +10,11 @@ AgentSight is a observability tool designed specifically for monitoring LLM agen
 ## Quick Start
 
 ```bash
-wget https://github.com/eunomia-bpf/agentsight/releases/download/v0.0.48/agentsight && chmod +x agentsight
+wget https://github.com/eunomia-bpf/agentsight/releases/download/v0.0.78/agentsight && chmod +x agentsight
 # Record agent behavior from claude
 sudo ./agentsight record -c "claude"
+# Record agent behavior from gemini-cli (comm is "node")
+sudo ./agentsight record -c "node"
 ```
 
 Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the recorded data.
