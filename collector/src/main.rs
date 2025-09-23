@@ -87,6 +87,9 @@ enum Commands {
         /// Log file to serve via API (used with --server)
         #[arg(long)]
         log_file: Option<String>,
+        /// Path to the binary executable to monitor (e.g., ~/.nvm/versions/node/v20.0.0/bin/node)
+        #[arg(long)]
+        binary_path: Option<String>,
         /// Additional arguments to pass to the SSL binary
         #[arg(last = true)]
         args: Vec<String>,
@@ -135,7 +138,7 @@ enum Commands {
         /// Include raw SSL data in HTTP parser events
         #[arg(long)]
         ssl_raw_data: bool,
-        
+
         /// Enable process monitoring
         #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
         process: bool,
@@ -151,13 +154,16 @@ enum Commands {
         /// Process filtering mode (0=all, 1=proc, 2=filter)
         #[arg(long)]
         mode: Option<u32>,
-        
+
         /// HTTP filters (applied to SSL runner after HTTP parsing)
         #[arg(long)]
         http_filter: Vec<String>,
         /// Disable authorization header removal from HTTP traffic
         #[arg(long)]
         disable_auth_removal: bool,
+        /// Path to the binary executable to monitor (e.g., ~/.nvm/versions/node/v20.0.0/bin/node)
+        #[arg(long)]
+        binary_path: Option<String>,
         /// Output file
         #[arg(short = 'o', long, default_value = "trace.log")]
         output: Option<String>,
@@ -186,6 +192,9 @@ enum Commands {
         /// Process command filter (defaults to "claude")
         #[arg(short = 'c', long)]
         comm: String,
+        /// Path to the binary executable to monitor (e.g., ~/.nvm/versions/node/v20.0.0/bin/node)
+        #[arg(long)]
+        binary_path: Option<String>,
         /// Output file
         #[arg(short = 'o', long, default_value = "record.log")]
         output: String,
@@ -220,10 +229,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let binary_extractor = BinaryExtractor::new().await?;
     
     match &cli.command {
-        Commands::Ssl { sse_merge, http_parser, http_raw_data, http_filter, disable_auth_removal, ssl_filter, quiet, rotate_logs, max_log_size, server, server_port, log_file, args } => run_raw_ssl(&binary_extractor, *sse_merge, *http_parser, *http_raw_data, http_filter, *disable_auth_removal, ssl_filter, *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref(), args).await.map_err(convert_runner_error)?,
+        Commands::Ssl { sse_merge, http_parser, http_raw_data, http_filter, disable_auth_removal, ssl_filter, quiet, rotate_logs, max_log_size, server, server_port, log_file, binary_path, args } => run_raw_ssl(&binary_extractor, *sse_merge, *http_parser, *http_raw_data, http_filter, *disable_auth_removal, ssl_filter, *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref(), binary_path.as_deref(), args).await.map_err(convert_runner_error)?,
         Commands::Process { quiet, rotate_logs, max_log_size, server, server_port, log_file, args } => run_raw_process(&binary_extractor, *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref(), args).await.map_err(convert_runner_error)?,
-        Commands::Trace { ssl, ssl_uid, pid, comm, ssl_filter, ssl_handshake, ssl_http, ssl_raw_data, process, duration, mode, http_filter, disable_auth_removal, output, quiet, rotate_logs, max_log_size, server, server_port, log_file } => run_trace(&binary_extractor, *ssl, *pid, *ssl_uid, comm.as_deref(), ssl_filter, *ssl_handshake, *ssl_http, *ssl_raw_data, *process, *duration, *mode, http_filter, *disable_auth_removal, output.as_deref(), *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref()).await.map_err(convert_runner_error)?,
-        Commands::Record { comm, output, rotate_logs, max_log_size, server_port, log_file } => {
+        Commands::Trace { ssl, ssl_uid, pid, comm, ssl_filter, ssl_handshake, ssl_http, ssl_raw_data, process, duration, mode, http_filter, disable_auth_removal, binary_path, output, quiet, rotate_logs, max_log_size, server, server_port, log_file } => run_trace(&binary_extractor, *ssl, *pid, *ssl_uid, comm.as_deref(), ssl_filter, *ssl_handshake, *ssl_http, *ssl_raw_data, *process, *duration, *mode, http_filter, *disable_auth_removal, binary_path.as_deref(), output.as_deref(), *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref()).await.map_err(convert_runner_error)?,
+        Commands::Record { comm, binary_path, output, rotate_logs, max_log_size, server_port, log_file } => {
             // Predefined filter patterns optimized for agent monitoring
             let http_filter_patterns = vec![
                 "request.path_prefix=/v1/rgstr | response.status_code=202 | request.method=HEAD | response.body=".to_string(),
@@ -231,8 +240,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let ssl_filter_patterns = vec![
                 "data=0\\r\\n\\r\\n | data.type=binary".to_string(),
             ];
-            
-            run_trace(&binary_extractor, true, None, None, Some(comm), &ssl_filter_patterns, false, true, false, true, None, None, &http_filter_patterns, false, Some(output), true, *rotate_logs, *max_log_size, true, *server_port, log_file.as_deref().or(Some(output))).await.map_err(convert_runner_error)?
+
+            run_trace(&binary_extractor, true, None, None, Some(comm), &ssl_filter_patterns, false, true, false, true, None, None, &http_filter_patterns, false, binary_path.as_deref(), Some(output), true, *rotate_logs, *max_log_size, true, *server_port, log_file.as_deref().or(Some(output))).await.map_err(convert_runner_error)?
         },
     }
     
@@ -241,7 +250,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
 /// Show raw SSL events as JSON with optional chunk merging and HTTP parsing
-async fn run_raw_ssl(binary_extractor: &BinaryExtractor, enable_chunk_merger: bool, enable_http_parser: bool, include_raw_data: bool, http_filter_patterns: &Vec<String>, disable_auth_removal: bool, ssl_filter_patterns: &Vec<String>, quiet: bool, rotate_logs: bool, max_log_size: u64, enable_server: bool, server_port: u16, log_file: Option<&str>, args: &Vec<String>) -> Result<(), RunnerError> {
+async fn run_raw_ssl(binary_extractor: &BinaryExtractor, enable_chunk_merger: bool, enable_http_parser: bool, include_raw_data: bool, http_filter_patterns: &Vec<String>, disable_auth_removal: bool, ssl_filter_patterns: &Vec<String>, quiet: bool, rotate_logs: bool, max_log_size: u64, enable_server: bool, server_port: u16, log_file: Option<&str>, binary_path: Option<&str>, args: &Vec<String>) -> Result<(), RunnerError> {
     println!("Raw SSL Events");
     println!("{}", "=".repeat(60));
     
@@ -250,9 +259,17 @@ async fn run_raw_ssl(binary_extractor: &BinaryExtractor, enable_chunk_merger: bo
     // Set up event broadcasting for server if enabled
     let (event_sender, _event_receiver) = broadcast::channel(1000);
     
-    // Add additional arguments if provided
-    if !args.is_empty() {
-        ssl_runner = ssl_runner.with_args(args);
+    // Build arguments list with binary_path if provided
+    let mut final_args = Vec::new();
+    if let Some(path) = binary_path {
+        final_args.push("--binary-path".to_string());
+        final_args.push(path.to_string());
+    }
+    final_args.extend_from_slice(args);
+
+    // Add all arguments if we have any
+    if !final_args.is_empty() {
+        ssl_runner = ssl_runner.with_args(&final_args);
     }
     
     // Add SSL filter if patterns are provided (must be first after SSL runner)
@@ -387,6 +404,7 @@ async fn run_trace(
     mode: Option<u32>,
     http_filter: &[String],
     disable_auth_removal: bool,
+    binary_path: Option<&str>,
     output: Option<&str>,
     quiet: bool,
     rotate_logs: bool,
@@ -407,7 +425,7 @@ async fn run_trace(
     if ssl_enabled {
         let mut ssl_runner = SslRunner::from_binary_extractor(binary_extractor.get_sslsniff_path());
         
-        // Configure SSL runner arguments (sslsniff supports -p, -u, -c, -h, -v)
+        // Configure SSL runner arguments (sslsniff supports -p, -u, -c, -h, -v, --binary-path)
         let mut ssl_args = Vec::new();
         if let Some(pid_filter) = pid {
             ssl_args.extend(["-p".to_string(), pid_filter.to_string()]);
@@ -420,6 +438,9 @@ async fn run_trace(
         }
         if ssl_handshake {
             ssl_args.push("--handshake".to_string());
+        }
+        if let Some(path) = binary_path {
+            ssl_args.extend(["--binary-path".to_string(), path.to_string()]);
         }
         if !ssl_args.is_empty() {
             ssl_runner = ssl_runner.with_args(&ssl_args);

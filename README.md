@@ -10,13 +10,13 @@ AgentSight is a observability tool designed specifically for monitoring LLM agen
 ## Quick Start
 
 ```bash
-wget https://github.com/eunomia-bpf/agentsight/releases/download/v0.1.0/agentsight && chmod +x agentsight
+wget https://github.com/eunomia-bpf/agentsight/releases/download/v0.1.1/agentsight && chmod +x agentsight
 # Record agent behavior from claude
 sudo ./agentsight record -c "claude"
 # Record agent behavior from gemini-cli (comm is "node")
 sudo ./agentsight record -c "node"
 # Record claude or gemini activity with NVM Node.js, if bundle OpenSSL statically
-sudo ./agentsight ssl --binary-path ~/.nvm/versions/node/v20.0.0/bin/node --comm node
+sudo ./agentsight record --binary-path /usr/bin/node -c node
 ```
 
 Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the recorded data.
