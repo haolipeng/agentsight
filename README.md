@@ -10,11 +10,13 @@ AgentSight is a observability tool designed specifically for monitoring LLM agen
 ## Quick Start
 
 ```bash
-wget https://github.com/eunomia-bpf/agentsight/releases/download/v0.0.78/agentsight && chmod +x agentsight
+wget https://github.com/eunomia-bpf/agentsight/releases/download/v0.1.0/agentsight && chmod +x agentsight
 # Record agent behavior from claude
 sudo ./agentsight record -c "claude"
 # Record agent behavior from gemini-cli (comm is "node")
 sudo ./agentsight record -c "node"
+# Record claude or gemini activity with NVM Node.js, if bundle OpenSSL statically
+sudo ./agentsight ssl --binary-path ~/.nvm/versions/node/v20.0.0/bin/node --comm node
 ```
 
 Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the recorded data.
@@ -29,6 +31,7 @@ Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the recorded data.
   <p><em>Real-time timeline visualization showing AI agent interactions and system calls</em></p>
 </div>
 
+Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the captured data in real-time.
 
 ## 🚀 Why AgentSight?
 
@@ -136,6 +139,48 @@ make build
 # make build-rust      # Build Rust collector
 
 ```
+
+### Usage Examples
+
+#### Basic Monitoring
+
+```bash
+# Monitor all SSL traffic from system applications
+sudo ./agentsight record -c "python"  # For Python AI tools
+sudo ./agentsight record -c "node"    # For Node.js AI tools
+sudo ./agentsight record -c "claude"  # For Claude Desktop
+
+# Combined SSL and process monitoring with web interface
+sudo ./agentsight trace --ssl --process --server
+```
+
+#### NVM Node.js Applications
+
+For Node.js installed via NVM, use the `--binary-path` option:
+
+```bash
+# Monitor Node.js applications with statically-linked SSL
+sudo ./agentsight ssl --binary-path ~/.nvm/versions/node/v20.0.0/bin/node --comm node
+
+# Record with custom binary path
+sudo ./agentsight record -c node -- --binary-path ~/.nvm/versions/node/v20.0.0/bin/node
+```
+
+#### Direct eBPF Program Usage
+
+```bash
+# Run eBPF programs directly for development/testing
+sudo ./bpf/sslsniff --binary-path ~/.nvm/versions/node/v20.0.0/bin/node --verbose
+sudo ./bpf/process -c python
+```
+
+#### Web Interface Access
+
+All monitoring commands with `--server` flag provide web visualization at:
+- **Timeline View**: http://127.0.0.1:8080/timeline  
+- **Process Tree**: http://127.0.0.1:8080/tree
+- **Raw Logs**: http://127.0.0.1:8080/logs
+
 ## ❓ Frequently Asked Questions
 
 ### General
@@ -159,6 +204,9 @@ A: Yes, use combined monitoring modes for concurrent multi-agent observation wit
 
 **Q: How do I filter sensitive data?**  
 A: Built-in analyzers can remove authentication headers and filter specific content patterns.
+
+**Q: Why doesn't AgentSight capture traffic from my NVM Node.js application?**  
+A: NVM Node.js binaries statically link OpenSSL instead of using system libraries. Use the `--binary-path` option to attach directly to your Node.js binary: `--binary-path ~/.nvm/versions/node/v20.0.0/bin/node`
 
 ### Troubleshooting
 
