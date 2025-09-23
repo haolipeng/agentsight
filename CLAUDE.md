@@ -33,6 +33,20 @@ AgentSight is a comprehensive observability framework designed specifically for 
 - **`libbpf/`**: libbpf library submodule
 - **`bpftool/`**: bpftool utility submodule
 
+## Quick Start
+
+```bash
+# Download pre-built binary (Linux x86_64)
+wget https://github.com/eunomia-bpf/agentsight/releases/download/v0.1.1/agentsight && chmod +x agentsight
+
+# Monitor all SSL traffic for a specific command
+sudo ./agentsight record --comm curl
+
+# Monitor with web UI on port 8080
+sudo ./agentsight record --comm python --server-port 8080
+# Open http://localhost:8080 in browser
+```
+
 ## Common Development Commands
 
 ### Building the Project
@@ -44,14 +58,18 @@ make install
 # Build eBPF programs
 make build
 
-# Build collector (requires Rust 1.88.0+)
+# Build collector (requires Rust 1.82.0+)
 cd collector && cargo build --release
+
+# Build optimized single binary with embedded eBPF programs
+cd collector && cargo build --release --features embed-ebpf
 
 # Build frontend
 cd frontend && npm install && npm run build
 
 # Run tests
-cd src && make test
+cd bpf && make test
+cd collector && cargo test
 
 # Clean build artifacts
 make clean
@@ -74,8 +92,8 @@ cd collector && cargo run record --comm claude --server-port 8080
 # Run frontend development server
 cd frontend && npm run dev
 
-# Run embedded web server for frontend
-cd collector && cargo run server --log-file trace.log
+# Run standalone binary with embedded web server
+sudo ./target/release/agentsight record --comm python --server
 
 # Build with AddressSanitizer for debugging
 cd bpf && make debug
@@ -225,7 +243,7 @@ The collector uses a subcommand-based CLI:
 - `trace`: Combined SSL and Process monitoring with configurable options (most flexible)
 - `record`: Optimized agent activity recording with predefined filters for common use cases
 
-Note: The standalone `server` command mentioned earlier has been integrated into each monitoring command via the `--server` flag.
+Note: The web server is integrated into each monitoring command via the `--server` flag. There is no separate `server` command.
 
 All commands support integrated web server via `--server` flag and log file serving via `--log-file` parameter. The `trace` command provides the most comprehensive monitoring capabilities with granular control over both SSL and process monitoring.
 
@@ -250,12 +268,12 @@ All commands support integrated web server via `--server` flag and log file serv
 
 ### Core Dependencies
 - **C/eBPF**: libbpf (v1.0+), libelf, clang (v10+), llvm
-- **Rust**: tokio (async runtime), serde (JSON), clap (CLI), async-trait, chrono (requires Rust edition 2024)
+- **Rust**: tokio (async runtime), serde (JSON), clap (CLI), async-trait, chrono (requires Rust 1.82.0+)
 - **Frontend**: Next.js 15.3+, React 18+, TypeScript 5+, Tailwind CSS
 - **System**: Linux kernel 4.1+ with eBPF support
 
 ### Development Dependencies
-- **Rust**: cargo edition 2024, env_logger, tempfile, uuid, hex, chunked_transfer
+- **Rust**: cargo edition 2021, env_logger, tempfile, uuid, hex, chunked_transfer
 - **Frontend**: ESLint, PostCSS, Autoprefixer, TypeScript compiler
 - **Python**: Analysis scripts for data processing (optional)
 - **Web Server**: hyper, hyper-util, rust-embed for embedded frontend serving
@@ -267,7 +285,7 @@ All commands support integrated web server via `--server` flag and log file serv
 - **Binary Extraction**: Ensure `/tmp` permissions allow execution, check `BinaryExtractor` cleanup
 - **UTF-8 Handling**: HTTP parser includes safety fixes for malformed data
 - **Frontend Build**: Ensure Node.js version compatibility and clean `node_modules` if needed
-- **Cargo Edition**: Project uses Rust edition 2024 - ensure compatible toolchain
+- **Cargo Edition**: Project uses Rust edition 2021 - ensure Rust 1.82.0+ toolchain
 - **eBPF Program Loading**: If programs fail to load, check for missing BTF support or use fallback vmlinux.h
 - **Port Conflicts**: Default web server runs on 8080, frontend dev server on 3000
 
@@ -293,21 +311,42 @@ cd collector && cargo run trace --ssl --process --comm python --server
 # Advanced trace with filtering
 cd collector && cargo run trace --ssl-filter "data.type=binary" --http-filter "request.method=POST" --server --log-file trace.log
 
-# Optimized agent recording
+# Optimized agent recording (recommended for AI agents)
 cd collector && cargo run record --comm claude --server-port 8080
+
+# Monitor Node.js apps with NVM (auto-detects binary path)
+cd collector && cargo run record --comm node --binary-path auto
 ```
 
 ### Frontend Visualization
 ```bash
-# Using Next.js development server
+# Using Next.js development server (for development)
 cd frontend && npm run dev
 # Open http://localhost:3000/timeline
 
-# Using embedded web server (integrated into monitoring commands)
-cd collector && cargo run trace --server --log-file trace.log
-# Open http://localhost:8080/timeline
+# Using embedded web server (production - recommended)
+sudo ./agentsight record --comm python --server
+# Open http://localhost:8080 (automatically opens timeline)
 
-# Server integrated with monitoring
-cd collector && cargo run trace --server --log-file output.log
-# Open http://localhost:8080/timeline
+# Custom port and log file
+sudo ./agentsight trace --server-port 9090 --log-file output.log
+# Open http://localhost:9090
+```
+
+## Binary Distribution
+
+The project provides pre-built binaries with embedded eBPF programs and frontend assets:
+
+```bash
+# Download latest release
+wget https://github.com/eunomia-bpf/agentsight/releases/latest/download/agentsight
+chmod +x agentsight
+
+# Single binary includes:
+# - All eBPF programs (process, sslsniff)
+# - Web frontend (React/Next.js)
+# - Rust collector framework
+# - No external dependencies required
+
+sudo ./agentsight --help
 ```
