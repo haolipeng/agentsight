@@ -15,6 +15,8 @@ wget https://github.com/eunomia-bpf/agentsight/releases/download/v0.1.1/agentsig
 sudo ./agentsight record -c "claude"
 # Record agent behavior from gemini-cli (comm is "node")
 sudo ./agentsight record -c "node"
+# For Python AI tools
+sudo ./agentsight record -c "python"
 # Record claude or gemini activity with NVM Node.js, if bundle OpenSSL statically
 sudo ./agentsight record --binary-path /usr/bin/node -c node
 ```
@@ -22,12 +24,12 @@ sudo ./agentsight record --binary-path /usr/bin/node -c node
 Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the recorded data.
 
 <div align="center">
-  <img src="docs/demo-tree.png" alt="AgentSight Demo - Process Tree Visualization" width="800">
+  <img src="https://github.com/eunomia-bpf/agentsight/raw/master/docs/demo-tree.png" alt="AgentSight Demo - Process Tree Visualization" width="800">
   <p><em>Real-time process tree visualization showing AI agent interactions and file operations</em></p>
 </div>
 
 <div align="center">
-  <img src="docs/demo-timeline.png" alt="AgentSight Demo - Timeline Visualization" width="800">
+  <img src="https://github.com/eunomia-bpf/agentsight/raw/master/docs/demo-timeline.png" alt="AgentSight Demo - Timeline Visualization" width="800">
   <p><em>Real-time timeline visualization showing AI agent interactions and system calls</em></p>
 </div>
 
@@ -147,8 +149,8 @@ make build
 ```bash
 # Monitor all SSL traffic from system applications
 sudo ./agentsight record -c "python"  # For Python AI tools
-sudo ./agentsight record -c "node"    # For Node.js AI tools
-sudo ./agentsight record -c "claude"  # For Claude Desktop
+sudo ./agentsight record -c "claude"  # For Claude Code
+sudo ./agentsight record -c "node"    # For Node.js AI tools like gemini-cli
 
 # Combined SSL and process monitoring with web interface
 sudo ./agentsight trace --ssl --process --server
