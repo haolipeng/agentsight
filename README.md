@@ -33,6 +33,11 @@ Visit [http://127.0.0.1:7395](http://127.0.0.1:7395) to view the recorded data.
   <p><em>Real-time timeline visualization showing AI agent interactions and system calls</em></p>
 </div>
 
+<div align="center">
+  <img src="https://github.com/eunomia-bpf/agentsight/raw/master/docs/demo-metrics.png" alt="AgentSight Demo - Metrics Visualization" width="800">
+  <p><em>Real-time metrics visualization showing AI agent memory and CPU usage</em></p>
+</div>
+
 Visit [http://127.0.0.1:7395](http://127.0.0.1:7395) to view the captured data in real-time.
 
 ## 🚀 Why AgentSight?
