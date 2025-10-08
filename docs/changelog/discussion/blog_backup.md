@@ -588,7 +588,7 @@ AgentSight supports multiple deployment models:
 cargo run trace --ssl --process --comm python --server
 
 # Record agent activity with optimized settings
-cargo run record --comm claude --server-port 8080
+cargo run record --comm claude --server-port 7395
 ```
 
 **Container Deployment**: Kubernetes-native deployment with sidecar pattern:

@@ -90,7 +90,7 @@ Check multiple sources for attack indicators:
 #### 3. View Real-Time Timeline
 ```bash
 # Access the web interface (if AgentSight was started with --server)
-# Open: http://localhost:8080/
+# Open: http://localhost:7395/
 ```
 
 The collector also print the following metrics:

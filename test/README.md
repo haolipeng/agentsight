@@ -43,7 +43,7 @@ python3 debug_assets.py http://localhost:9000
 
 ### Server not responding
 1. Ensure collector server is running: `cd collector && cargo run server`
-2. Check port 8080 is available
+2. Check port 7395 is available
 3. Check firewall settings
 
 ### Frontend build issues

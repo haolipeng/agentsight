@@ -97,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Usage example:");
     println!("  cargo run system --pid {} --interval 2", current_pid);
     println!("  cargo run system --comm rust --cpu-threshold 50");
-    println!("  cargo run system --server --server-port 8080");
+    println!("  cargo run system --server --server-port 7395");
 
     Ok(())
 }

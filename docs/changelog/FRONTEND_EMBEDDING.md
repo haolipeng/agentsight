@@ -281,7 +281,7 @@ enum Commands {
     /// Start web server with embedded frontend
     Serve {
         /// Port to bind to
-        #[arg(short, long, default_value = "8080")]
+        #[arg(short, long, default_value = "7395")]
         port: u16,
         /// Host to bind to
         #[arg(long, default_value = "127.0.0.1")]
@@ -401,15 +401,15 @@ cargo build --release
 
 ```bash
 # Serve frontend only
-sudo ./target/release/collector serve --port 8080
+sudo ./target/release/collector serve --port 7395
 
 # Serve frontend with data collection
-sudo ./target/release/collector serve --port 8080 --collect
+sudo ./target/release/collector serve --port 7395 --collect
 ```
 
 ### 3. Access the Frontend
 
-Open your browser to `http://localhost:8080`
+Open your browser to `http://localhost:7395`
 
 ## API Endpoints
 

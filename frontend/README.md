@@ -78,7 +78,7 @@ npm start
 
 # Or serve via collector (recommended)
 cd ../collector && cargo run server
-# Access at http://localhost:8080
+# Access at http://localhost:7395
 ```
 
 ## Usage
@@ -93,7 +93,7 @@ The frontend supports multiple data input methods:
 cd ../collector && cargo run server
 
 # Access web interface with live data
-open http://localhost:8080/timeline
+open http://localhost:7395/timeline
 ```
 
 #### 2. File Upload
@@ -131,7 +131,7 @@ open http://localhost:8080/timeline
 
 ```bash
 # API endpoint for data syncing
-NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_API_URL=http://localhost:7395
 
 # Enable debug mode
 NEXT_PUBLIC_DEBUG=true

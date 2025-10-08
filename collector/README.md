@@ -343,7 +343,7 @@ The collector includes an embedded web server with frontend for visualization:
 cargo run server
 
 # Access web interface
-# http://localhost:8080/timeline
+# http://localhost:7395/timeline
 ```
 
 ### Web Interface Features

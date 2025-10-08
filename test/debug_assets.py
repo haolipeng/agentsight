@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 class AssetDebugger:
-    def __init__(self, base_url="http://localhost:8080"):
+    def __init__(self, base_url="http://localhost:7395"):
         self.base_url = base_url
         self.session = requests.Session()
         self.results = []
@@ -190,7 +190,7 @@ def main():
     print("=" * 40)
     
     # Parse command line arguments
-    server_url = "http://localhost:8080"
+    server_url = "http://localhost:7395"
     if len(sys.argv) > 1:
         server_url = sys.argv[1]
     
@@ -206,7 +206,7 @@ def main():
             print("If assets are failing, try:")
             print("1. cd frontend && npm run build")
             print("2. cd collector && cargo run server")
-            print("3. Check http://localhost:8080/timeline")
+            print("3. Check http://localhost:7395/timeline")
         else:
             print("\n" + "=" * 40)
             print("Debug test found issues. Check the log above.")

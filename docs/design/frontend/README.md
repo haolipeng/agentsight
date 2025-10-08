@@ -204,8 +204,8 @@ npm run start             # Start production server
 
 ### **Environment Variables**
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:8080
-NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:8080/ws
+NEXT_PUBLIC_API_URL=http://localhost:7395
+NEXT_PUBLIC_WEBSOCKET_URL=ws://localhost:7395/ws
 NEXT_PUBLIC_ENVIRONMENT=production
 ```
 

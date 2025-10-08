@@ -64,7 +64,7 @@ cargo run system --interval 10
 ```bash
 cargo run system --comm rust \
   --server \
-  --server-port 8080 \
+  --server-port 7395 \
   --log-file system.log
 ```
 
@@ -141,7 +141,7 @@ cargo run system --pid 1234 --no-children
 | `rotate_logs` | `bool` | false | Enable log rotation |
 | `max_log_size` | `u64` | 10 | Max log size in MB for rotation |
 | `server` | `bool` | false | Enable web server |
-| `server_port` | `u16` | 8080 | Web server port |
+| `server_port` | `u16` | 7395 | Web server port |
 
 ## Programmatic Usage
 

@@ -127,7 +127,7 @@ TECHNICAL FOCUS:
 
 AGENTSIGHT CONTEXT:
 - Work within frontend/ directory structure
-- Integrate with collector's embedded web server on port 8080
+- Integrate with collector's embedded web server on port 7395
 - Parse AgentSight's JSON event format from log files
 - Handle SSL/TLS traffic visualization and process lifecycle events
 - Support both development (npm run dev) and embedded serving modes

@@ -231,7 +231,7 @@ Security Auditor: "Validate performance meets <3% eBPF overhead target"
 cd bpf/
 make build
 make test
-sudo ./sslsniff -p 8080  # Test execution
+sudo ./sslsniff -p 7395  # Test execution
 ```
 
 ### Rust Framework Architect Patterns

@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { LogView } from '@/components/LogView';
 import { TimelineView } from '@/components/TimelineView';
 import { ProcessTreeView } from '@/components/ProcessTreeView';
+import { ResourceMetricsView } from '@/components/ResourceMetricsView';
 import { UploadPanel } from '@/components/UploadPanel';
 import { Event } from '@/types/event';
 
-type ViewMode = 'log' | 'timeline' | 'process-tree';
+type ViewMode = 'log' | 'timeline' | 'process-tree' | 'metrics';
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null);
@@ -243,6 +244,16 @@ export default function Home() {
                   >
                     Process Tree
                   </button>
+                  <button
+                    onClick={() => setViewMode('metrics')}
+                    className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                      viewMode === 'metrics'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    Metrics
+                  </button>
                 </div>
                 
                 {/* Action Buttons */}
@@ -277,6 +288,8 @@ export default function Home() {
               <LogView events={events} />
             ) : viewMode === 'timeline' ? (
               <TimelineView events={events} />
+            ) : viewMode === 'metrics' ? (
+              <ResourceMetricsView events={events} />
             ) : (
               <ProcessTreeView events={events} />
             )

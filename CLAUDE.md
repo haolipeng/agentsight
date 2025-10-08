@@ -42,9 +42,9 @@ wget https://github.com/eunomia-bpf/agentsight/releases/download/v0.1.1/agentsig
 # Monitor all SSL traffic for a specific command
 sudo ./agentsight record --comm curl
 
-# Monitor with web UI on port 8080
-sudo ./agentsight record --comm python --server-port 8080
-# Open http://localhost:8080 in browser
+# Monitor with web UI on port 7395
+sudo ./agentsight record --comm python --server-port 7395
+# Open http://localhost:7395 in browser
 ```
 
 ## Common Development Commands
@@ -87,7 +87,7 @@ sudo bpf/sslsniff
 cd collector && cargo run ssl --sse-merge
 cd collector && cargo run process
 cd collector && cargo run trace --ssl --process --comm python --server
-cd collector && cargo run record --comm claude --server-port 8080
+cd collector && cargo run record --comm claude --server-port 7395
 
 # Run frontend development server
 cd frontend && npm run dev
@@ -287,7 +287,7 @@ All commands support integrated web server via `--server` flag and log file serv
 - **Frontend Build**: Ensure Node.js version compatibility and clean `node_modules` if needed
 - **Cargo Edition**: Project uses Rust edition 2021 - ensure Rust 1.82.0+ toolchain
 - **eBPF Program Loading**: If programs fail to load, check for missing BTF support or use fallback vmlinux.h
-- **Port Conflicts**: Default web server runs on 8080, frontend dev server on 3000
+- **Port Conflicts**: Default web server runs on 7395, frontend dev server on 3000
 
 ## Usage Examples
 
@@ -312,7 +312,7 @@ cd collector && cargo run trace --ssl --process --comm python --server
 cd collector && cargo run trace --ssl-filter "data.type=binary" --http-filter "request.method=POST" --server --log-file trace.log
 
 # Optimized agent recording (recommended for AI agents)
-cd collector && cargo run record --comm claude --server-port 8080
+cd collector && cargo run record --comm claude --server-port 7395
 
 # Monitor Node.js apps with NVM (auto-detects binary path)
 cd collector && cargo run record --comm node --binary-path auto
@@ -326,7 +326,7 @@ cd frontend && npm run dev
 
 # Using embedded web server (production - recommended)
 sudo ./agentsight record --comm python --server
-# Open http://localhost:8080 (automatically opens timeline)
+# Open http://localhost:7395 (automatically opens timeline)
 
 # Custom port and log file
 sudo ./agentsight trace --server-port 9090 --log-file output.log

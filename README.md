@@ -21,7 +21,7 @@ sudo ./agentsight record -c "python"
 sudo ./agentsight record --binary-path /usr/bin/node -c node
 ```
 
-Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the recorded data.
+Visit [http://127.0.0.1:7395](http://127.0.0.1:7395) to view the recorded data.
 
 <div align="center">
   <img src="https://github.com/eunomia-bpf/agentsight/raw/master/docs/demo-tree.png" alt="AgentSight Demo - Process Tree Visualization" width="800">
@@ -33,7 +33,7 @@ Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the recorded data.
   <p><em>Real-time timeline visualization showing AI agent interactions and system calls</em></p>
 </div>
 
-Visit [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the captured data in real-time.
+Visit [http://127.0.0.1:7395](http://127.0.0.1:7395) to view the captured data in real-time.
 
 ## 🚀 Why AgentSight?
 
@@ -179,9 +179,9 @@ sudo ./bpf/process -c python
 #### Web Interface Access
 
 All monitoring commands with `--server` flag provide web visualization at:
-- **Timeline View**: http://127.0.0.1:8080/timeline  
-- **Process Tree**: http://127.0.0.1:8080/tree
-- **Raw Logs**: http://127.0.0.1:8080/logs
+- **Timeline View**: http://127.0.0.1:7395/timeline  
+- **Process Tree**: http://127.0.0.1:7395/tree
+- **Raw Logs**: http://127.0.0.1:7395/logs
 
 ## ❓ Frequently Asked Questions
 

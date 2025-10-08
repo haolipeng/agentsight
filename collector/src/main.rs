@@ -78,11 +78,11 @@ enum Commands {
         /// Maximum log file size in MB (used with --rotate-logs)
         #[arg(long, default_value = "10")]
         max_log_size: u64,
-        /// Start web server on port 8080
+        /// Start web server on port 7395
         #[arg(long)]
         server: bool,
         /// Server port (used with --server)
-        #[arg(long, default_value = "8080")]
+        #[arg(long, default_value = "7395")]
         server_port: u16,
         /// Log file to serve via API (used with --server)
         #[arg(long)]
@@ -105,11 +105,11 @@ enum Commands {
         /// Maximum log file size in MB (used with --rotate-logs)
         #[arg(long, default_value = "10")]
         max_log_size: u64,
-        /// Start web server on port 8080
+        /// Start web server on port 7395
         #[arg(long)]
         server: bool,
         /// Server port (used with --server)
-        #[arg(long, default_value = "8080")]
+        #[arg(long, default_value = "7395")]
         server_port: u16,
         /// Log file to serve via API (used with --server)
         #[arg(long)]
@@ -183,11 +183,11 @@ enum Commands {
         /// Maximum log file size in MB (used with --rotate-logs)
         #[arg(long, default_value = "10")]
         max_log_size: u64,
-        /// Start web server on port 8080
+        /// Start web server on port 7395
         #[arg(long)]
         server: bool,
         /// Server port (used with --server)
-        #[arg(long, default_value = "8080")]
+        #[arg(long, default_value = "7395")]
         server_port: u16,
         /// Log file to serve via API (used with --server)
         #[arg(long)]
@@ -212,7 +212,7 @@ enum Commands {
         #[arg(long, default_value = "10")]
         max_log_size: u64,
         /// Server port (used with --server, always enabled)
-        #[arg(long, default_value = "8080")]
+        #[arg(long, default_value = "7395")]
         server_port: u16,
         /// Log file to serve via API (defaults to record.log)
         #[arg(long)]
@@ -250,11 +250,11 @@ enum Commands {
         /// Maximum log file size in MB (used with --rotate-logs)
         #[arg(long, default_value = "10")]
         max_log_size: u64,
-        /// Start web server on port 8080
+        /// Start web server on port 7395
         #[arg(long)]
         server: bool,
         /// Server port (used with --server)
-        #[arg(long, default_value = "8080")]
+        #[arg(long, default_value = "7395")]
         server_port: u16,
         /// Log file to serve via API (used with --server)
         #[arg(long)]
