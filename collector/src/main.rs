@@ -9,7 +9,7 @@ mod server;
 
 use framework::{
     binary_extractor::BinaryExtractor,
-    runners::{SslRunner, ProcessRunner, AgentRunner, RunnerError, Runner},
+    runners::{SslRunner, ProcessRunner, AgentRunner, SystemRunner, RunnerError, Runner},
     analyzers::{OutputAnalyzer, FileLogger, SSEProcessor, HTTPParser, HTTPFilter, AuthHeaderRemover, SSLFilter, print_global_http_filter_metrics, print_global_ssl_filter_metrics}
 };
 
@@ -155,6 +155,13 @@ enum Commands {
         #[arg(long)]
         mode: Option<u32>,
 
+        /// Enable system resource monitoring (CPU and memory)
+        #[arg(long)]
+        system: bool,
+        /// System monitoring interval in seconds
+        #[arg(long, default_value = "2")]
+        system_interval: u64,
+
         /// HTTP filters (applied to SSL runner after HTTP parsing)
         #[arg(long)]
         http_filter: Vec<String>,
@@ -211,6 +218,48 @@ enum Commands {
         #[arg(long)]
         log_file: Option<String>,
     },
+    /// Monitor system resources (CPU and memory)
+    System {
+        /// Monitoring interval in seconds
+        #[arg(short = 'i', long, default_value = "2")]
+        interval: u64,
+        /// Process PID to monitor
+        #[arg(short = 'p', long)]
+        pid: Option<u32>,
+        /// Process command name to monitor
+        #[arg(short = 'c', long)]
+        comm: Option<String>,
+        /// Exclude children processes from aggregation
+        #[arg(long)]
+        no_children: bool,
+        /// CPU usage threshold for alerts (%)
+        #[arg(long)]
+        cpu_threshold: Option<f64>,
+        /// Memory usage threshold for alerts (MB)
+        #[arg(long)]
+        memory_threshold: Option<u64>,
+        /// Output file
+        #[arg(short = 'o', long, default_value = "system.log")]
+        output: String,
+        /// Suppress console output
+        #[arg(short, long)]
+        quiet: bool,
+        /// Enable log rotation
+        #[arg(long)]
+        rotate_logs: bool,
+        /// Maximum log file size in MB (used with --rotate-logs)
+        #[arg(long, default_value = "10")]
+        max_log_size: u64,
+        /// Start web server on port 8080
+        #[arg(long)]
+        server: bool,
+        /// Server port (used with --server)
+        #[arg(long, default_value = "8080")]
+        server_port: u16,
+        /// Log file to serve via API (used with --server)
+        #[arg(long)]
+        log_file: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -231,7 +280,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     match &cli.command {
         Commands::Ssl { sse_merge, http_parser, http_raw_data, http_filter, disable_auth_removal, ssl_filter, quiet, rotate_logs, max_log_size, server, server_port, log_file, binary_path, args } => run_raw_ssl(&binary_extractor, *sse_merge, *http_parser, *http_raw_data, http_filter, *disable_auth_removal, ssl_filter, *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref(), binary_path.as_deref(), args).await.map_err(convert_runner_error)?,
         Commands::Process { quiet, rotate_logs, max_log_size, server, server_port, log_file, args } => run_raw_process(&binary_extractor, *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref(), args).await.map_err(convert_runner_error)?,
-        Commands::Trace { ssl, ssl_uid, pid, comm, ssl_filter, ssl_handshake, ssl_http, ssl_raw_data, process, duration, mode, http_filter, disable_auth_removal, binary_path, output, quiet, rotate_logs, max_log_size, server, server_port, log_file } => run_trace(&binary_extractor, *ssl, *pid, *ssl_uid, comm.as_deref(), ssl_filter, *ssl_handshake, *ssl_http, *ssl_raw_data, *process, *duration, *mode, http_filter, *disable_auth_removal, binary_path.as_deref(), output.as_deref(), *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref()).await.map_err(convert_runner_error)?,
+        Commands::Trace { ssl, ssl_uid, pid, comm, ssl_filter, ssl_handshake, ssl_http, ssl_raw_data, process, duration, mode, system, system_interval, http_filter, disable_auth_removal, binary_path, output, quiet, rotate_logs, max_log_size, server, server_port, log_file } => run_trace(&binary_extractor, *ssl, *pid, *ssl_uid, comm.as_deref(), ssl_filter, *ssl_handshake, *ssl_http, *ssl_raw_data, *process, *duration, *mode, *system, *system_interval, http_filter, *disable_auth_removal, binary_path.as_deref(), output.as_deref(), *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref()).await.map_err(convert_runner_error)?,
         Commands::Record { comm, binary_path, output, rotate_logs, max_log_size, server_port, log_file } => {
             // Predefined filter patterns optimized for agent monitoring
             let http_filter_patterns = vec![
@@ -241,8 +290,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "data=0\\r\\n\\r\\n | data.type=binary".to_string(),
             ];
 
-            run_trace(&binary_extractor, true, None, None, Some(comm), &ssl_filter_patterns, false, true, false, true, None, None, &http_filter_patterns, false, binary_path.as_deref(), Some(output), true, *rotate_logs, *max_log_size, true, *server_port, log_file.as_deref().or(Some(output))).await.map_err(convert_runner_error)?
+            // Enable system monitoring by default for record command
+            run_trace(&binary_extractor, true, None, None, Some(comm), &ssl_filter_patterns, false, true, false, true, None, None, true, 2, &http_filter_patterns, false, binary_path.as_deref(), Some(output), true, *rotate_logs, *max_log_size, true, *server_port, log_file.as_deref().or(Some(output))).await.map_err(convert_runner_error)?
         },
+        Commands::System { interval, pid, comm, no_children, cpu_threshold, memory_threshold, output, quiet, rotate_logs, max_log_size, server, server_port, log_file } => run_system(*interval, *pid, comm.as_deref(), !*no_children, *cpu_threshold, *memory_threshold, output, *quiet, *rotate_logs, *max_log_size, *server, *server_port, log_file.as_deref()).await.map_err(convert_runner_error)?,
     }
     
     Ok(())
@@ -402,6 +453,8 @@ async fn run_trace(
     process_enabled: bool,
     duration: Option<u32>,
     mode: Option<u32>,
+    system_enabled: bool,
+    system_interval: u64,
     http_filter: &[String],
     disable_auth_removal: bool,
     binary_path: Option<&str>,
@@ -504,9 +557,28 @@ async fn run_trace(
         println!("✓ Process monitoring enabled");
     }
     
-    // Ensure at least one runner is enabled (this check is now redundant but kept for safety)
-    if !ssl_enabled && !process_enabled {
-        return Err("At least one monitoring type must be enabled (--ssl or --process)".into());
+    // Add system resource runner if enabled
+    if system_enabled {
+        let mut system_runner = SystemRunner::new()
+            .interval(system_interval);
+
+        // Use same comm filter as other runners if provided
+        if let Some(comm_filter) = comm {
+            system_runner = system_runner.comm(comm_filter);
+        }
+
+        // Use same pid filter if provided
+        if let Some(pid_filter) = pid {
+            system_runner = system_runner.pid(pid_filter);
+        }
+
+        agent = agent.add_runner(Box::new(system_runner));
+        println!("✓ System monitoring enabled (interval: {}s)", system_interval);
+    }
+
+    // Ensure at least one runner is enabled
+    if !ssl_enabled && !process_enabled && !system_enabled {
+        return Err("At least one monitoring type must be enabled (--ssl, --process, or --system)".into());
     }
     
     // Add global analyzers (HTTP filter is now added to SSL runner instead)
@@ -551,6 +623,97 @@ async fn run_trace(
 
 
 // Shared server management function
+/// Monitor system resources (CPU and memory)
+async fn run_system(
+    interval: u64,
+    pid: Option<u32>,
+    comm: Option<&str>,
+    include_children: bool,
+    cpu_threshold: Option<f64>,
+    memory_threshold: Option<u64>,
+    output: &str,
+    quiet: bool,
+    rotate_logs: bool,
+    max_log_size: u64,
+    enable_server: bool,
+    server_port: u16,
+    log_file: Option<&str>,
+) -> Result<(), RunnerError> {
+    println!("System Resource Monitoring");
+    println!("{}", "=".repeat(60));
+
+    let mut system_runner = SystemRunner::new()
+        .interval(interval);
+
+    // Configure monitoring target
+    if let Some(pid) = pid {
+        system_runner = system_runner.pid(pid);
+        println!("Monitoring PID: {}", pid);
+    } else if let Some(comm) = comm {
+        system_runner = system_runner.comm(comm);
+        println!("Monitoring process: {}", comm);
+    } else {
+        println!("Monitoring system-wide resources");
+    }
+
+    // Configure options
+    system_runner = system_runner.include_children(include_children);
+
+    if let Some(threshold) = cpu_threshold {
+        system_runner = system_runner.cpu_threshold(threshold);
+        println!("CPU alert threshold: {}%", threshold);
+    }
+
+    if let Some(threshold) = memory_threshold {
+        system_runner = system_runner.memory_threshold(threshold);
+        println!("Memory alert threshold: {} MB", threshold);
+    }
+
+    println!("Interval: {}s", interval);
+    println!("Include children: {}", include_children);
+    println!("{}", "=".repeat(60));
+    println!("Starting system monitoring (press Ctrl+C to stop):");
+
+    // Set up event broadcasting for server if enabled
+    let (event_sender, _event_receiver) = broadcast::channel(1000);
+
+    // Add file logger
+    system_runner = system_runner
+        .add_analyzer(Box::new(
+            if rotate_logs {
+                FileLogger::with_max_size(output, max_log_size).unwrap()
+            } else {
+                FileLogger::new(output).unwrap()
+            }
+        ));
+
+    // Add console output unless quiet
+    if !quiet {
+        system_runner = system_runner.add_analyzer(Box::new(OutputAnalyzer::new()));
+    }
+
+    // Start web server if enabled
+    let _server_handle = start_web_server_if_enabled(
+        enable_server,
+        server_port,
+        log_file.or(Some(output)),
+        event_sender.clone()
+    ).await
+        .map_err(|e| RunnerError::from(format!("Failed to start server: {}", e)))?;
+
+    let mut stream = system_runner.run().await?;
+
+    // Consume the stream to actually process events
+    while let Some(event) = stream.next().await {
+        // Forward events to web server if enabled
+        if enable_server {
+            let _ = event_sender.send(event);
+        }
+    }
+
+    Ok(())
+}
+
 async fn start_web_server_if_enabled(
     enable_server: bool,
     port: u16,
@@ -563,20 +726,20 @@ async fn start_web_server_if_enabled(
 
     let addr = format!("127.0.0.1:{}", port).parse()
         .map_err(|e| format!("Invalid server address: {}", e))?;
-    
+
     let web_server = WebServer::new(event_sender, log_file).map_err(|e| format!("Failed to create web server: {}", e))?;
-    
+
     println!("🌐 Starting web server on http://{}", addr);
     println!("   Frontend will be available once the server starts");
-    
+
     let server_handle = tokio::spawn(async move {
         if let Err(e) = web_server.start(addr).await {
             eprintln!("❌ Web server error: {}", e);
         }
     });
-    
+
     // Give the server a moment to start
     tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-    
+
     Ok(Some(server_handle))
 }
