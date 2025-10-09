@@ -29,6 +29,7 @@ struct event {
 	unsigned long long duration_ns;
 	unsigned long long timestamp_ns;
 	char comm[TASK_COMM_LEN];
+	char full_command[MAX_COMMAND_LEN];     /* full command line with args */
 	union {
 		char filename[MAX_FILENAME_LEN];     /* for process events */
 		char command[MAX_COMMAND_LEN];       /* for bash readline events */

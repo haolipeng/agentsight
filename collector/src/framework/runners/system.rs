@@ -7,7 +7,7 @@ use serde_json::json;
 use std::collections::HashMap;
 use std::fs;
 use std::pin::Pin;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::Duration;
 use tokio::time;
 
 /// Configuration for system resource monitoring
@@ -130,6 +130,19 @@ impl Runner for SystemRunner {
     }
 }
 
+/// Get nanoseconds since boot (matching bpf_ktime_get_ns() behavior)
+fn get_boot_time_ns() -> u64 {
+    // Read /proc/uptime to get seconds since boot
+    if let Ok(uptime_str) = fs::read_to_string("/proc/uptime") {
+        if let Some(uptime_secs) = uptime_str.split_whitespace().next() {
+            if let Ok(secs) = uptime_secs.parse::<f64>() {
+                return (secs * 1_000_000_000.0) as u64;
+            }
+        }
+    }
+    0
+}
+
 /// Create a stream of system monitoring events
 fn create_system_event_stream(
     config: SystemConfig,
@@ -141,10 +154,7 @@ fn create_system_event_stream(
         loop {
             interval.tick().await;
 
-            let timestamp = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_nanos() as u64;
+            let timestamp = get_boot_time_ns();
 
             // Find target PIDs to monitor
             let target_pids = find_target_pids(&config);
@@ -433,9 +443,7 @@ fn get_process_cpu_stats(pid: u32) -> Result<ProcessStats, Box<dyn std::error::E
 
     let utime: u64 = fields[13].parse()?;
     let stime: u64 = fields[14].parse()?;
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)?
-        .as_nanos() as u64;
+    let timestamp = get_boot_time_ns();
 
     Ok(ProcessStats {
         utime,
@@ -452,7 +460,7 @@ fn calculate_cpu_percentage(
     timestamp: u64,
 ) -> f64 {
     let cpu_percent = if let Some(prev) = previous_stats.get(&pid) {
-        let time_delta = (timestamp - prev.timestamp) as f64 / 1_000_000_000.0; // Convert to seconds
+        let time_delta = (timestamp - prev.timestamp) as f64 / 1_000_000_000.0; // Convert nanoseconds to seconds
         let cpu_delta = (current.utime + current.stime) - (prev.utime + prev.stime);
 
         // CPU ticks to percentage (assumes USER_HZ = 100)

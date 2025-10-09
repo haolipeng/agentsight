@@ -170,6 +170,18 @@ eBPF Binary → JSON Output → Runner → Analyzer Chain → Frontend/Storage/O
 4. **Analyzer Chain**: Multiple analyzers process events in configurable sequences
 5. **Output**: Processed events sent to console, files, frontend, or external systems
 
+### Timestamp Conventions
+
+All events use a **standardized timestamp format** for consistency:
+
+- **Storage Format**: Nanoseconds since boot (matching `bpf_ktime_get_ns()` from eBPF)
+- **eBPF Programs**: Use `bpf_ktime_get_ns()` which returns nanoseconds since system boot
+- **SystemRunner**: Reads `/proc/uptime` and converts to nanoseconds since boot
+- **Display Format**: `Event::datetime()` converts to wall-clock time using boot time from `/proc/stat`
+- **Conversion**: `timestamp_epoch_ns = boot_time_secs * 1_000_000_000 + timestamp_boot_ns`
+
+This ensures all timestamps are directly comparable across SSL, Process, and System events, enabling accurate timeline correlation in the frontend.
+
 ## Development Patterns
 
 ### Adding New eBPF Programs

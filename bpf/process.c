@@ -534,12 +534,12 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			printf("\"comm\":\"%s\",", e->comm);
 			printf("\"pid\":%d,", e->pid);
 			printf("\"ppid\":%d", e->ppid);
-			
+
 			if (e->exit_event) {
 				printf(",\"exit_code\":%u", e->exit_code);
 				if (e->duration_ns)
 					printf(",\"duration_ms\":%llu", e->duration_ns / 1000000);
-				
+
 				// Check if this PID has pending rate limit warning
 				bool add_warning = false;
 				for (int i = 0; i < pid_limit_count; i++) {
@@ -550,7 +550,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 						break;
 					}
 				}
-				
+
 				if (add_warning) {
 					printf(",\"rate_limit_warning\":\"Process had %d+ file ops per second\"", MAX_DISTINCT_FILES_PER_SEC);
 				}
@@ -560,6 +560,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 				flush_pid_file_opens(e->pid, timestamp_ns);
 			} else {
 				printf(",\"filename\":\"%s\"", e->filename);
+				printf(",\"full_command\":\"%s\"", e->full_command);
 				printf("}\n");
 			}
 			break;

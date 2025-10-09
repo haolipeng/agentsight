@@ -455,9 +455,14 @@ function getEarliestTimestamp(process: ProcessNode): number {
 export function buildProcessTree(events: Event[]): ProcessNode[] {
   const processMap = new Map<number, ProcessNode>();
   const eventsByPid = new Map<number, ParsedEvent[]>();
-  
+
   // First pass: create process nodes and parse events
   events.forEach(event => {
+    // Skip system metrics events - they should not appear in process tree
+    if (event.source === 'system' || event.data?.type === 'system_metrics' || event.data?.type === 'system_wide') {
+      return;
+    }
+
     const { pid, comm } = event;
     
     // Initialize process if not exists

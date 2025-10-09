@@ -11,11 +11,17 @@ A minimal CLI-driven observability framework using a fluent builder pattern wher
 ```rust
 pub struct Event {
     pub id: String,
-    pub timestamp: u64,
+    pub timestamp: u64,  // Nanoseconds since boot (from bpf_ktime_get_ns())
     pub source: String,
     pub event_type: String,
     pub data: serde_json::Value,
 }
+
+// Timestamp Convention:
+// - All events store timestamps as nanoseconds since system boot
+// - eBPF programs use bpf_ktime_get_ns() which returns ns since boot
+// - SystemRunner reads /proc/uptime and converts to nanoseconds
+// - Event::datetime() converts to wall-clock time using boot time from /proc/stat
 ```
 
 ### 2. Runners (Fluent Builder Pattern)

@@ -217,6 +217,34 @@ int handle_exec(struct trace_event_raw_sched_process_exec *ctx)
 	fname_off = ctx->__data_loc_filename & 0xFFFF;
 	bpf_probe_read_str(&e->filename, sizeof(e->filename), (void *)ctx + fname_off);
 
+	/* Capture full command line with arguments from mm->arg_start */
+	struct mm_struct *mm = BPF_CORE_READ(task, mm);
+	unsigned long arg_start = BPF_CORE_READ(mm, arg_start);
+	unsigned long arg_end = BPF_CORE_READ(mm, arg_end);
+	unsigned long arg_len = arg_end - arg_start;
+
+	/* Limit to buffer size */
+	if (arg_len > MAX_COMMAND_LEN - 1)
+		arg_len = MAX_COMMAND_LEN - 1;
+
+	/* Read command line from userspace memory */
+	if (arg_len > 0) {
+		long ret = bpf_probe_read_user_str(&e->full_command, arg_len + 1, (void *)arg_start);
+		if (ret < 0) {
+			/* Fallback to just comm if we can't read cmdline */
+			bpf_probe_read_kernel_str(&e->full_command, sizeof(e->full_command), e->comm);
+		} else {
+			/* Replace null bytes with spaces for readability */
+			for (int i = 0; i < MAX_COMMAND_LEN - 1 && i < ret - 1; i++) {
+				if (e->full_command[i] == '\0')
+					e->full_command[i] = ' ';
+			}
+		}
+	} else {
+		/* No arguments, use comm */
+		bpf_probe_read_kernel_str(&e->full_command, sizeof(e->full_command), e->comm);
+	}
+
 	/* successfully submit it to user-space for post-processing */
 	bpf_ringbuf_submit(e, 0);
 	return 0;
