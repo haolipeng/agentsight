@@ -10,7 +10,7 @@ mod server;
 use framework::{
     binary_extractor::BinaryExtractor,
     runners::{SslRunner, ProcessRunner, AgentRunner, SystemRunner, RunnerError, Runner},
-    analyzers::{OutputAnalyzer, FileLogger, SSEProcessor, HTTPParser, HTTPFilter, AuthHeaderRemover, SSLFilter, print_global_http_filter_metrics, print_global_ssl_filter_metrics}
+    analyzers::{OutputAnalyzer, FileLogger, SSEProcessor, HTTPParser, HTTPFilter, AuthHeaderRemover, SSLFilter, TimestampNormalizer, print_global_http_filter_metrics, print_global_ssl_filter_metrics}
 };
 
 use server::WebServer;
@@ -306,10 +306,10 @@ async fn run_raw_ssl(binary_extractor: &BinaryExtractor, enable_chunk_merger: bo
     println!("{}", "=".repeat(60));
     
     let mut ssl_runner = SslRunner::from_binary_extractor(binary_extractor.get_sslsniff_path());
-    
+
     // Set up event broadcasting for server if enabled
     let (event_sender, _event_receiver) = broadcast::channel(1000);
-    
+
     // Build arguments list with binary_path if provided
     let mut final_args = Vec::new();
     if let Some(path) = binary_path {
@@ -322,8 +322,11 @@ async fn run_raw_ssl(binary_extractor: &BinaryExtractor, enable_chunk_merger: bo
     if !final_args.is_empty() {
         ssl_runner = ssl_runner.with_args(&final_args);
     }
-    
-    // Add SSL filter if patterns are provided (must be first after SSL runner)
+
+    // Add TimestampNormalizer first to convert nanoseconds since boot to milliseconds since epoch
+    ssl_runner = ssl_runner.add_analyzer(Box::new(TimestampNormalizer::new()));
+
+    // Add SSL filter if patterns are provided
     if !ssl_filter_patterns.is_empty() {
         ssl_runner = ssl_runner.add_analyzer(Box::new(SSLFilter::with_patterns(ssl_filter_patterns.clone())));
     }
@@ -399,15 +402,18 @@ async fn run_raw_process(binary_extractor: &BinaryExtractor, quiet: bool, rotate
     println!("{}", "=".repeat(60));
     
     let mut process_runner = ProcessRunner::from_binary_extractor(binary_extractor.get_process_path());
-    
+
     // Set up event broadcasting for server if enabled
     let (event_sender, _event_receiver) = broadcast::channel(1000);
-    
+
     // Add additional arguments if provided
     if !args.is_empty() {
         process_runner = process_runner.with_args(args);
     }
-    
+
+    // Add TimestampNormalizer first to convert nanoseconds since boot to milliseconds since epoch
+    process_runner = process_runner.add_analyzer(Box::new(TimestampNormalizer::new()));
+
     if !quiet {
         process_runner = process_runner.add_analyzer(Box::new(OutputAnalyzer::new()));
     }
@@ -477,7 +483,7 @@ async fn run_trace(
     // Add SSL runner if enabled
     if ssl_enabled {
         let mut ssl_runner = SslRunner::from_binary_extractor(binary_extractor.get_sslsniff_path());
-        
+
         // Configure SSL runner arguments (sslsniff supports -p, -u, -c, -h, -v, --binary-path)
         let mut ssl_args = Vec::new();
         if let Some(pid_filter) = pid {
@@ -498,7 +504,10 @@ async fn run_trace(
         if !ssl_args.is_empty() {
             ssl_runner = ssl_runner.with_args(&ssl_args);
         }
-        
+
+        // Add TimestampNormalizer first
+        ssl_runner = ssl_runner.add_analyzer(Box::new(TimestampNormalizer::new()));
+
         // Add SSL-specific analyzers
         if !ssl_filter.is_empty() {
             ssl_runner = ssl_runner.add_analyzer(Box::new(SSLFilter::with_patterns(ssl_filter.to_vec())));
@@ -537,7 +546,7 @@ async fn run_trace(
     // Add process runner if enabled
     if process_enabled {
         let mut process_runner = ProcessRunner::from_binary_extractor(binary_extractor.get_process_path());
-        
+
         // Configure process runner arguments (process supports -c, -d, -m, -v)
         let mut process_args = Vec::new();
         if let Some(comm_filter) = comm {
@@ -552,7 +561,10 @@ async fn run_trace(
         if !process_args.is_empty() {
             process_runner = process_runner.with_args(&process_args);
         }
-        
+
+        // Add TimestampNormalizer first
+        process_runner = process_runner.add_analyzer(Box::new(TimestampNormalizer::new()));
+
         agent = agent.add_runner(Box::new(process_runner));
         println!("✓ Process monitoring enabled");
     }
@@ -571,6 +583,9 @@ async fn run_trace(
         if let Some(pid_filter) = pid {
             system_runner = system_runner.pid(pid_filter);
         }
+
+        // Add TimestampNormalizer first
+        system_runner = system_runner.add_analyzer(Box::new(TimestampNormalizer::new()));
 
         agent = agent.add_runner(Box::new(system_runner));
         println!("✓ System monitoring enabled (interval: {}s)", system_interval);
@@ -676,6 +691,9 @@ async fn run_system(
 
     // Set up event broadcasting for server if enabled
     let (event_sender, _event_receiver) = broadcast::channel(1000);
+
+    // Add TimestampNormalizer first
+    system_runner = system_runner.add_analyzer(Box::new(TimestampNormalizer::new()));
 
     // Add file logger
     system_runner = system_runner

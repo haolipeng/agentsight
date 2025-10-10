@@ -36,7 +36,7 @@ export function ResourceMetricsView({ events }: ResourceMetricsViewProps) {
       const memoryMB = data.memory?.rss_mb || 0;
       const memoryVszMB = data.memory?.vsz_mb || 0;
 
-      const datetime = new Date(event.timestamp / 1000000); // Convert nanoseconds to milliseconds
+      const datetime = new Date(event.timestamp); // Timestamp is already in milliseconds since epoch
 
       return {
         timestamp: event.timestamp,

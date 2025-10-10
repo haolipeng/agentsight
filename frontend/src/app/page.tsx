@@ -38,7 +38,10 @@ export default function Home() {
       lines.forEach((line, index) => {
         try {
           const event = JSON.parse(line.trim()) as Event;
-          
+
+          // Timestamp is expected to be in milliseconds since UNIX epoch
+          // (handled by TimestampNormalizer analyzer in the backend)
+
           // Validate event structure - auto-generate id if missing
           if (event.timestamp && event.source && event.data) {
             if (!event.id) {
