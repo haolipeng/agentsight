@@ -12,18 +12,23 @@ export function extractFilterOptions(events: Event[]) {
   events.forEach(event => {
     // Parse the event to get structured data
     const parsedEvent = parseEventData(event);
-    
+
+    // Skip system events
+    if (parsedEvent === null) {
+      return;
+    }
+
     // Event types
     eventTypes.add(parsedEvent.type);
-    
+
     // Sources
     sources.add(event.source);
-    
+
     // Commands
     if (event.comm) {
       commands.add(event.comm);
     }
-    
+
     // Models (extract from different event types)
     if (parsedEvent.type === 'prompt' || parsedEvent.type === 'response') {
       const model = parsedEvent.metadata?.model;
@@ -44,7 +49,12 @@ export function extractFilterOptions(events: Event[]) {
 // Check if an event matches the filters
 export function eventMatchesFilters(event: Event, filters: ProcessTreeFilters): boolean {
   const parsedEvent = parseEventData(event);
-  
+
+  // Skip system events
+  if (parsedEvent === null) {
+    return false;
+  }
+
   // Event type filter
   if (filters.eventTypes.length > 0 && !filters.eventTypes.includes(parsedEvent.type)) {
     return false;

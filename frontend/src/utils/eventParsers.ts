@@ -24,7 +24,7 @@ export interface TimelineItem {
 export interface ParsedEvent {
   id: string;
   timestamp: number;
-  type: 'prompt' | 'response' | 'ssl' | 'file' | 'process';
+  type: 'prompt' | 'response' | 'ssl' | 'file' | 'process' | 'system';
   title: string;
   content: string;
   metadata: Record<string, any>;
@@ -185,9 +185,9 @@ class DataExtractor {
 }
 
 // Parse different types of events
-export function parseEventData(event: Event): ParsedEvent {
+export function parseEventData(event: Event): ParsedEvent | null {
   const eventType = determineEventType(event.source, event.data);
-  
+
   switch (eventType) {
     case 'prompt':
       return parsePromptEvent(event);
@@ -205,6 +205,13 @@ export function parseEventData(event: Event): ParsedEvent {
 }
 
 function determineEventType(source: string, data: any): ParsedEvent['type'] {
+  // Check for system events first
+  const sourceStr = String(source || '').toLowerCase().trim();
+  const dataType = String(data?.type || '').toLowerCase().trim();
+  if (sourceStr === 'system' || dataType === 'system_metrics' || dataType === 'system_wide' || dataType.includes('system')) {
+    return 'system';
+  }
+
   if (isPromptEvent(source, data)) return 'prompt';
   if (isResponseEvent(source, data)) return 'response';
   if (isFileEvent(source, data)) return 'file';
@@ -459,7 +466,13 @@ export function buildProcessTree(events: Event[]): ProcessNode[] {
   // First pass: create process nodes and parse events
   events.forEach(event => {
     // Skip system metrics events - they should not appear in process tree
-    if (event.source === 'system' || event.data?.type === 'system_metrics' || event.data?.type === 'system_wide') {
+    const source = String(event.source || '').toLowerCase().trim();
+    const dataType = String(event.data?.type || '').toLowerCase().trim();
+
+    if (source === 'system' ||
+        dataType === 'system_metrics' ||
+        dataType === 'system_wide' ||
+        dataType.includes('system')) {
       return;
     }
 
@@ -479,6 +492,9 @@ export function buildProcessTree(events: Event[]): ProcessNode[] {
     
     // Parse event and group by PID
     const parsedEvent = parseEventData(event);
+    if (parsedEvent === null) {
+      return; // Skip system events
+    }
     if (!eventsByPid.has(pid)) {
       eventsByPid.set(pid, []);
     }

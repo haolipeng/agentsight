@@ -13,7 +13,7 @@ use tokio::time;
 /// Configuration for system resource monitoring
 #[derive(Debug, Clone)]
 pub struct SystemConfig {
-    /// Monitoring interval in seconds (default: 2)
+    /// Monitoring interval in seconds (default: 10)
     pub interval_secs: u64,
     /// Monitor specific PID (None = monitor all)
     pub pid: Option<u32>,
@@ -30,7 +30,7 @@ pub struct SystemConfig {
 impl Default for SystemConfig {
     fn default() -> Self {
         Self {
-            interval_secs: 2,
+            interval_secs: 10,
             pid: None,
             comm: None,
             include_children: true,
@@ -541,7 +541,7 @@ mod tests {
         let runner = SystemRunner::new();
         assert_eq!(runner.name(), "system");
         assert_eq!(runner.id(), "system");
-        assert_eq!(runner.config.interval_secs, 2);
+        assert_eq!(runner.config.interval_secs, 10);
     }
 
     #[test]
