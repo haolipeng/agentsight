@@ -194,7 +194,7 @@ enum Commands {
         log_file: Option<String>,
     },
     /// Record agent activity with optimized filters and settings
-    /// Equivalent to: trace -c claude --http-filter "request.path_prefix=/v1/rgstr | response.status_code=202 | request.method=HEAD | response.body=" --ssl-filter "data=0\\r\\n\\r\\n|data.type=binary" -q --server
+    /// Equivalent to: trace -c claude --http-filter "request.path_prefix=/v1/rgstr | response.status_code=202 | request.method=HEAD | response.body=" --ssl-filter "data=0\\r\\n\\r\\n|data.type=binary" -q --server-port 80 --server --log-file trace.log
     Record {
         /// Process command filter (defaults to "claude")
         #[arg(short = 'c', long)]

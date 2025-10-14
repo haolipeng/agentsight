@@ -663,8 +663,8 @@ int main(int argc, char **argv)
 	}
 	
 	/* Output configuration as JSON */
-	printf("Config: filter_mode=%d, min_duration_ms=%ld, commands=%d, pid=%d, initial_tracked_pids=%d\n", 
-	       env.filter_mode, env.min_duration_ms, env.command_count, env.pid, tracked_count);
+	// printf("Config: filter_mode=%d, min_duration_ms=%ld, commands=%d, pid=%d, initial_tracked_pids=%d\n", 
+	//        env.filter_mode, env.min_duration_ms, env.command_count, env.pid, tracked_count);
 
 	/* Attach tracepoints */
 	err = process_bpf__attach(skel);
