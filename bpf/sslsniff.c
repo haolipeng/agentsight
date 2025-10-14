@@ -428,6 +428,7 @@ void print_event(struct probe_SSL_data_t *event, const char *evt) {
 
 	// Close JSON object
 	printf("}\n");
+	fflush(stdout);
 }
 
 static int handle_event(void *ctx, void *data, size_t data_sz) {

@@ -245,8 +245,9 @@ static void print_file_open_event(const struct event *e, uint64_t timestamp_ns, 
 	if (extra_fields && strlen(extra_fields) > 0) {
 		printf(",%s", extra_fields);
 	}
-	
+
 	printf("}\n");
+	fflush(stdout);
 }
 
 
@@ -555,6 +556,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 					printf(",\"rate_limit_warning\":\"Process had %d+ file ops per second\"", MAX_DISTINCT_FILES_PER_SEC);
 				}
 				printf("}\n");
+				fflush(stdout);
 
 				// Flush all pending FILE_OPEN aggregations for this PID
 				flush_pid_file_opens(e->pid, timestamp_ns);
@@ -562,6 +564,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 				printf(",\"filename\":\"%s\"", e->filename);
 				printf(",\"full_command\":\"%s\"", e->full_command);
 				printf("}\n");
+				fflush(stdout);
 			}
 			break;
 			
@@ -574,6 +577,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			printf("\"pid\":%d,", e->pid);
 			printf("\"command\":\"%s\"", e->command);
 			printf("}\n");
+			fflush(stdout);
 			break;
 			
 		case EVENT_TYPE_FILE_OPERATION:
@@ -602,6 +606,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz)
 			printf("\"event\":\"UNKNOWN\",");
 			printf("\"event_type\":%d", e->type);
 			printf("}\n");
+			fflush(stdout);
 			break;
 	}
 
@@ -692,7 +697,7 @@ int main(int argc, char **argv)
 			break;
 		}
 		if (err < 0) {
-			printf("Error polling perf buffer: %d\n", err);
+			fprintf(stderr, "Error polling perf buffer: %d\n", err);
 			break;
 		}
 	}
