@@ -194,6 +194,20 @@ jobs:
     - name: Build package
       run: make build
 
+    - name: Update version in Cargo.toml
+      run: |
+        VERSION=${{ steps.set_version.outputs.result }}
+        # Remove 'v' prefix if present
+        VERSION_NO_V=${VERSION#v}
+        echo "Updating version to: $VERSION_NO_V"
+        sed -i "s/^version = \".*\"/version = \"$VERSION_NO_V\"/" collector/Cargo.toml
+        grep "^version" collector/Cargo.toml
+
+    - name: Rebuild collector with updated version
+      run: |
+        cd collector
+        cargo build --release --features embed-ebpf
+
     - name: Publish Release
       uses: softprops/action-gh-release@v1
       with:
