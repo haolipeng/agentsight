@@ -129,6 +129,47 @@ eBPF Programs → JSON Events → Runners → Analyzer Chain → Frontend/Storag
 
 ### Installation
 
+#### Option 1: Using Docker (Recommended)
+
+```bash
+# Pull the latest Docker image
+docker pull ghcr.io/eunomia-bpf/agentsight:latest
+
+# Or build locally
+git clone https://github.com/eunomia-bpf/agentsight.git --recursive
+cd agentsight
+make build  # Build the agentsight binary first
+docker build -t agentsight:local -f dockerfile .
+```
+
+Run with Docker:
+```bash
+# Basic monitoring with web UI (access at http://localhost:7395)
+docker run --privileged --pid=host -p 7395:7395 -v /sys:/sys:ro \
+  ghcr.io/eunomia-bpf/agentsight:latest record --comm claude
+
+# Monitor Python AI tools
+docker run --privileged --pid=host -p 7395:7395 -v /sys:/sys:ro \
+  ghcr.io/eunomia-bpf/agentsight:latest record --comm python
+
+# Save logs to host directory
+docker run --privileged --pid=host -p 7395:7395 -v /sys:/sys:ro \
+  -v $(pwd)/logs:/logs \
+  ghcr.io/eunomia-bpf/agentsight:latest record --comm node --log-file /logs/record.log
+
+# Use custom port
+docker run --privileged --pid=host -p 8080:8080 -v /sys:/sys:ro \
+  ghcr.io/eunomia-bpf/agentsight:latest record --comm claude --server-port 8080
+```
+
+**Docker Requirements:**
+- `--privileged`: Required for eBPF (loads kernel programs)
+- `--pid=host`: Access host processes for monitoring
+- `-v /sys:/sys:ro`: Read-only access to kernel interfaces
+- `-p 7395:7395`: Expose web UI port (default: 7395)
+
+#### Option 2: Build from Source
+
 ```bash
 # Clone repository with submodules
 git clone https://github.com/eunomia-bpf/agentsight.git --recursive
@@ -142,7 +183,7 @@ make build
 
 # Or build individually:
 # make build-frontend  # Build frontend assets
-# make build-bpf       # Build eBPF programs  
+# make build-bpf       # Build eBPF programs
 # make build-rust      # Build Rust collector
 
 ```
