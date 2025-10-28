@@ -317,20 +317,17 @@ void print_event(struct probe_SSL_data_t *event, const char *evt) {
 		return;
 	}
 
-	// eBPF captures up to MAX_BUF_SIZE bytes per event
-	if (event->len <= MAX_BUF_SIZE) {
-		buf_size = event->len;
-	} else {
-		buf_size = MAX_BUF_SIZE;
-	}
-
-	if (event->buf_filled == 1 && buf_size > 0) {
+	// Use the actual bytes copied from eBPF
+	if (event->buf_filled == 1) {
+		buf_size = event->buf_size;
 		// Additional safety check to prevent buffer overflow
 		if (buf_size > MAX_BUF_SIZE) {
 			buf_size = MAX_BUF_SIZE;
 		}
-		memcpy(event_buf, event->buf, buf_size);
-		event_buf[buf_size] = '\0';  // Null terminate
+		if (buf_size > 0) {
+			memcpy(event_buf, event->buf, buf_size);
+			event_buf[buf_size] = '\0';  // Null terminate
+		}
 	} else {
 		buf_size = 0;
 	}
@@ -358,6 +355,7 @@ void print_event(struct probe_SSL_data_t *event, const char *evt) {
 	printf("\"comm\":\"%s\",", event->comm);
 	printf("\"pid\":%d,", event->pid);
 	printf("\"len\":%d,", event->len);
+	printf("\"buf_size\":%u,", event->buf_size);
 
 	// Always include extra fields (UID, TID)
 	printf("\"uid\":%d,", event->uid);

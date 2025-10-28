@@ -120,6 +120,7 @@ static int SSL_exit(struct pt_regs *ctx, int rw) {
     data->uid = uid;
     data->len = (u32)len;
     data->buf_filled = 0;
+    data->buf_size = 0;
     data->rw = rw;
     data->is_handshake = false;
     u32 buf_copy_size = min((size_t)MAX_BUF_SIZE, (size_t)len);
@@ -132,10 +133,13 @@ static int SSL_exit(struct pt_regs *ctx, int rw) {
     bpf_map_delete_elem(&bufs, &tid);
     bpf_map_delete_elem(&start_ns, &tid);
 
-    if (!ret)
+    if (!ret) {
         data->buf_filled = 1;
-    else
-        buf_copy_size = 0;
+        data->buf_size = buf_copy_size;
+    } else {
+        data->buf_filled = 0;
+        data->buf_size = 0;
+    }
 
     /* submit to ring buffer */
     bpf_ringbuf_submit(data, 0);
@@ -229,6 +233,7 @@ static int ex_SSL_exit(struct pt_regs *ctx, int rw, int len) {
     data->uid = uid;
     data->len = (u32)len;
     data->buf_filled = 0;
+    data->buf_size = 0;
     data->rw = rw;
     data->is_handshake = false;
     u32 buf_copy_size = min((size_t)MAX_BUF_SIZE, (size_t)len);
@@ -241,10 +246,13 @@ static int ex_SSL_exit(struct pt_regs *ctx, int rw, int len) {
     bpf_map_delete_elem(&bufs, &tid);
     bpf_map_delete_elem(&start_ns, &tid);
 
-    if (!ret)
+    if (!ret) {
         data->buf_filled = 1;
-    else
-        buf_copy_size = 0;
+        data->buf_size = buf_copy_size;
+    } else {
+        data->buf_filled = 0;
+        data->buf_size = 0;
+    }
 
     /* submit to ring buffer */
     bpf_ringbuf_submit(data, 0);
@@ -342,6 +350,7 @@ int BPF_URETPROBE(probe_SSL_do_handshake_exit) {
     data->uid = uid;
     data->len = ret;
     data->buf_filled = 0;
+    data->buf_size = 0;
     data->rw = 2;
     data->is_handshake = true;
     bpf_get_current_comm(&data->comm, sizeof(data->comm));

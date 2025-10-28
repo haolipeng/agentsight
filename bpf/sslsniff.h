@@ -17,6 +17,7 @@ struct probe_SSL_data_t {
     __u32 tid;
     __u32 uid;
     __u32 len;
+    __u32 buf_size;         // Actual bytes copied to buf
     int buf_filled;
     int rw;
     char comm[TASK_COMM_LEN];

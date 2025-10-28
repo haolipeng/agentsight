@@ -25,11 +25,26 @@ def is_gzip_data(data_bytes):
 
 
 def decode_json_escaped_string(s):
-    """Decode a JSON-escaped string to raw bytes."""
-    # Handle unicode escapes like \u001f
-    decoded = s.encode('utf-8').decode('unicode-escape')
-    # Convert to bytes using latin-1 to preserve all byte values
-    return decoded.encode('latin-1')
+    """
+    Decode a JSON-escaped string to raw bytes.
+
+    The sslsniff eBPF code outputs binary data as:
+    - Invalid UTF-8 bytes: \\uXXXX escapes (json.loads converts to char with that codepoint)
+    - Valid UTF-8 sequences: Raw UTF-8 bytes (json.loads decodes to Unicode chars)
+
+    To recover original bytes:
+    - Chars with codepoint < 256: use as byte value
+    - Chars with codepoint >= 256: re-encode to UTF-8
+    """
+    result = bytearray()
+    for c in s:
+        cp = ord(c)
+        if cp < 256:
+            result.append(cp)
+        else:
+            # This came from valid UTF-8 in binary data
+            result.extend(c.encode('utf-8'))
+    return bytes(result)
 
 
 def try_decompress_gzip(data_bytes):

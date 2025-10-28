@@ -148,9 +148,10 @@ Run with Docker:
 docker run --privileged --pid=host -p 7395:7395 -v /sys:/sys:ro \
   ghcr.io/eunomia-bpf/agentsight:latest record --comm claude
 
-# Monitor Python AI tools
-docker run --privileged --pid=host -p 7395:7395 -v /sys:/sys:ro \
-  ghcr.io/eunomia-bpf/agentsight:latest record --comm python
+# Monitor Python AI tools (requires library mounts for SSL capture)
+docker run --privileged --pid=host --network=host \
+  -v /sys:/sys:ro -v /lib:/lib:ro -v /usr/lib:/usr/lib:ro \
+  ghcr.io/eunomia-bpf/agentsight:latest record --comm python3
 
 # Save logs to host directory
 docker run --privileged --pid=host -p 7395:7395 -v /sys:/sys:ro \
@@ -166,7 +167,8 @@ docker run --privileged --pid=host -p 8080:8080 -v /sys:/sys:ro \
 - `--privileged`: Required for eBPF (loads kernel programs)
 - `--pid=host`: Access host processes for monitoring
 - `-v /sys:/sys:ro`: Read-only access to kernel interfaces
-- `-p 7395:7395`: Expose web UI port (default: 7395)
+- `-v /lib:/lib:ro -v /usr/lib:/usr/lib:ro`: Required for Python SSL monitoring in docker (eBPF needs to read shared libraries to attach uprobes)
+- `-p 7395:7395` or `--network=host`: Expose web UI port (default: 7395)
 
 #### Option 2: Build from Source
 
@@ -225,9 +227,37 @@ sudo ./bpf/process -c python
 #### Web Interface Access
 
 All monitoring commands with `--server` flag provide web visualization at:
-- **Timeline View**: http://127.0.0.1:7395/timeline  
+- **Timeline View**: http://127.0.0.1:7395/timeline
 - **Process Tree**: http://127.0.0.1:7395/tree
 - **Raw Logs**: http://127.0.0.1:7395/logs
+
+#### Testing with Python Scripts
+
+To test AgentSight with Python scripts inside containers (like `script/test-python/test_openai.py`):
+
+```bash
+# 1. Start AgentSight in Docker (captures SSL traffic from host Python processes)
+docker run --privileged --pid=host --network=host \
+  -v /sys:/sys:ro -v /lib:/lib:ro -v /usr/lib:/usr/lib:ro \
+  -v $(pwd)/logs:/logs \
+  ghcr.io/eunomia-bpf/agentsight:latest \
+  record --comm python3 --log-file /logs/capture.log
+
+# 2. In another terminal, run your Python script on the host
+python3 your_script.py
+
+# 3. View captured traffic at http://localhost:7395 or check logs/capture.log
+```
+
+**Why library mounts are needed:**
+- Python uses dynamically-linked SSL libraries (`libssl.so.3`, `libcrypto.so.3`)
+- eBPF uprobes need to read these libraries from `/lib` and `/usr/lib` to attach to SSL functions
+- With `--pid=host`, the container monitors host processes but needs access to host libraries
+
+**Alternative: Run agentsight directly on host** (simpler for testing):
+```bash
+sudo ./agentsight record --comm python3 --server-port 7395
+```
 
 ## ❓ Frequently Asked Questions
 
