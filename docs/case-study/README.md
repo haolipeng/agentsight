@@ -94,7 +94,7 @@ AgentSight uses eBPF to:
 ## Technical Innovation
 
 ### Boundary Tracing Advantages
-- **Tamper-resistant**: Monitoring at kernel boundary prevents agent manipulation
+- **Independent Monitoring**: Operates at kernel boundary, independent of application code
 - **Comprehensive**: Captures all system interactions across process boundaries
 - **Stable**: Relies on slowly-changing kernel ABIs rather than volatile APIs
 

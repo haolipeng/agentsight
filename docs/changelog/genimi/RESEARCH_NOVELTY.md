@@ -40,13 +40,13 @@ AgentSight's eBPF-based approach provides a unique opportunity to address these 
     *   **Blame Attribution:** Attributing a failure to a specific component, such as the agent's model, a tool, or the environment.
 *   **Research Novelty:** This would provide a powerful tool for debugging LLM agents and for understanding the complex interplay between the agent and its environment.
 
-### 2.4. Tamper-Resistant Auditing and Security Monitoring
+### 2.4. System-Level Auditing and Security Monitoring
 
 *   **Feature:** Enhance AgentSight's security monitoring capabilities by:
     *   **Detecting Prompt Injection Attacks:** Identifying attempts to manipulate the agent's behavior through malicious prompts.
     *   **Monitoring for Data Exfiltration:** Detecting attempts by the agent to exfiltrate sensitive data.
-    *   **Verifying Agent Integrity:** Ensuring that the agent's code and configuration have not been tampered with.
-*   **Research Novelty:** AgentSight's eBPF-based approach is uniquely suited for tamper-resistant monitoring, as it operates at a level below the application and cannot be easily bypassed by a compromised agent.
+    *   **Verifying Agent Integrity:** Ensuring that the agent's code and configuration have not been modified.
+*   **Research Novelty:** AgentSight's eBPF-based approach is uniquely suited for system-level monitoring, as it operates at a level below the application and cannot be easily bypassed by a compromised agent.
 
 ## 3. Evaluation Framework for a Research Paper
 
@@ -56,7 +56,7 @@ A research paper based on AgentSight should not only present the tool but also r
 
 The evaluation should be guided by a set of clear research questions, such as:
 
-*   To what extent can AgentSight's eBPF-based approach provide a more comprehensive and tamper-resistant view of agent behavior compared to traditional instrumentation-based approaches?
+*   To what extent can AgentSight's eBPF-based approach provide a more comprehensive and system-level view of agent behavior compared to traditional instrumentation-based approaches?
 *   How effective is the Cognitive Tracer at reconstructing the agent's reasoning process?
 *   Can the Anomaly Detector identify subtle and complex anomalies in agent behavior that are missed by traditional monitoring tools?
 *   How accurately can the Causal Analyzer identify the root cause of a failure?

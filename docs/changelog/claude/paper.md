@@ -1,6 +1,6 @@
 # AgentSight: Evaluating eBPF-based AI Agent Observability as a Research Paper
 
-This document outlines a comprehensive evaluation framework for AgentSight, a novel observability system that leverages eBPF technology to provide tamper-resistant, kernel-level monitoring of AI agents. We analyze the research novelty, identify key evaluation dimensions, propose experimental methodologies, and define success metrics for assessing this system's contribution to the field of AI agent observability.
+This document outlines a comprehensive evaluation framework for AgentSight, a novel observability system that leverages eBPF technology to provide system-level, kernel-level monitoring of AI agents. We analyze the research novelty, identify key evaluation dimensions, propose experimental methodologies, and define success metrics for assessing this system's contribution to the field of AI agent observability.
 
 ## 1. Research Problem and Motivation
 
@@ -29,7 +29,7 @@ Unlike traditional software components that produce deterministic, easily observ
 
 * **Instrumentation gap** – Agent logic and algorithm changes daily (new prompts, tools) or by itself at runtime. Relying on in-code hooks means constant churn; kernel-side or side-car tracing stays stable.
 * **Semantic telemetry** – We need new span attributes ("model.temp", "tool.role", "reasoning.loop_id") and new anomaly detectors (contradiction, persona drift).
-* **Tamper resistance** – If prompt-injection turns the agent malicious it may silence its own logs. Out-of-process and kernel level tracing provides an independent audit channel.
+* **System Independence** – If prompt-injection turns the agent malicious it may silence its own logs. Out-of-process and kernel level tracing provides an independent audit channel.
 
 **Landscape Analysis of Current Solutions:**
 
@@ -46,7 +46,7 @@ Unlike traditional software components that produce deterministic, easily observ
 ### 1.3 Research Hypothesis
 
 **The AgentSight Hypothesis:**
-By operating at the kernel level using eBPF, we can provide tamper-resistant, comprehensive observability that captures agent behavior at the system boundary, where it cannot be easily circumvented or modified.
+By operating at the kernel level using eBPF, we can provide system-level, comprehensive observability that captures agent behavior at the system boundary, where it cannot be easily circumvented or modified.
 
 ## 2. Technical Innovation and Novelty
 
@@ -56,7 +56,7 @@ By operating at the kernel level using eBPF, we can provide tamper-resistant, co
 * First system to apply eBPF technology specifically to AI agent observability
 * Kernel-level interception of SSL/TLS traffic to capture unencrypted agent communications
 * Process-level monitoring of agent system interactions with minimal overhead (<3%)
-* Tamper-resistant architecture that operates below the application layer
+* system-level architecture that operates below the application layer
 
 **Secondary Innovations:**
 * **Streaming Analysis Framework**: Real-time event processing with pluggable analyzers
@@ -71,7 +71,7 @@ By operating at the kernel level using eBPF, we can provide tamper-resistant, co
 | Aspect | Traditional APM | LLM Observability Tools | AgentSight |
 |--------|-----------------|-------------------------|------------|
 | **Monitoring Level** | Application | Application/Framework | Kernel |
-| **Tamper Resistance** | Low | Low | High |
+| **System Independence** | Low | Low | High |
 | **Agent Agnostic** | Partial | Framework-specific | Yes |
 | **Real-time Analysis** | Limited | Limited | Yes |
 | **Overhead** | 5-15% | 10-20% | <3% |
@@ -100,7 +100,7 @@ Most LLM serving uses TLS to communicate with backend servers, and uses SSE to s
 
 1. **RQ1**: How effectively can eBPF-based monitoring capture agent behavior compared to application-level instrumentation?
 2. **RQ2**: What is the performance overhead of kernel-level agent monitoring versus traditional approaches?
-3. **RQ3**: How tamper-resistant is the system against sophisticated agent attempts to evade monitoring?
+3. **RQ3**: How system-level is the system against sophisticated agent attempts to evade monitoring?
 4. **RQ4**: Can system-level observations enable semantic understanding of agent behavior?
 
 **Secondary Research Questions:**
@@ -123,7 +123,7 @@ Most LLM serving uses TLS to communicate with backend servers, and uses SSE to s
 * **Coverage**: Percentage of agent behaviors captured
 * **Accuracy**: Precision of event detection and classification
 * **Overhead**: CPU, memory, and network impact
-* **Tamper Resistance**: Success rate of evasion attempts
+* **System Independence**: Success rate of evasion attempts
 * **Latency**: End-to-end monitoring delay
 
 #### 3.2.2 Controlled Experiments
@@ -138,7 +138,7 @@ Most LLM serving uses TLS to communicate with backend servers, and uses SSE to s
 * Measure resource utilization across different system loads
 * Compare overhead against baseline monitoring solutions
 
-**Experiment 3: Tamper Resistance Evaluation**
+**Experiment 3: System Independence Evaluation**
 * Design adversarial agents that attempt to evade monitoring
 * Test various evasion techniques (process hiding, network obfuscation, etc.)
 * Measure detection success rates
@@ -179,7 +179,7 @@ Most LLM serving uses TLS to communicate with backend servers, and uses SSE to s
 
 **Novel Evaluation Metrics:**
 * **Behavioral Completeness Index (BCI)**: Measures percentage of agent decision points captured
-* **Tamper Resistance Score (TRS)**: Quantifies system resilience against evasion attempts
+* **System Independence Score (TRS)**: Quantifies system resilience against evasion attempts
 * **Semantic Fidelity Metric (SFM)**: Evaluates accuracy of behavior interpretation
 
 ## 4. Technical Implementation Evaluation
@@ -214,7 +214,7 @@ Most LLM serving uses TLS to communicate with backend servers, and uses SSE to s
 **Theoretical Contributions:**
 * Novel application of eBPF to AI agent monitoring
 * Framework for kernel-level AI observability
-* Methodology for tamper-resistant agent monitoring
+* Methodology for system-level agent monitoring
 * Evaluation framework for AI agent observability systems
 
 **Practical Contributions:**
@@ -271,7 +271,7 @@ Most LLM serving uses TLS to communicate with backend servers, and uses SSE to s
 
 ### 7.1 Proposed Paper Organization
 
-**Title**: "AgentSight: Tamper-Resistant Observability for AI Agents via eBPF"
+**Title**: "AgentSight: System-Level Observability for AI Agents via eBPF"
 
 **Abstract**:
 Problem statement, approach, key results, and contributions in 200 words.
@@ -319,7 +319,7 @@ Problem statement, approach, key results, and contributions in 200 words.
 **Primary Contributions:**
 
 1. **Novel technical approach**: First kernel-level AI agent monitoring system
-2. **Tamper-resistant architecture**: Security-focused design for autonomous agents
+2. **system-level architecture**: Security-focused design for autonomous agents
 3. **Comprehensive evaluation**: Rigorous assessment across multiple dimensions
 4. **Open-source framework**: Enabling reproducible research and adoption
 
@@ -328,7 +328,7 @@ Problem statement, approach, key results, and contributions in 200 words.
 1. **Semantic analysis pipeline**: Automated behavior classification from system events
 2. **Multi-agent coordination monitoring**: Novel insights into agent interactions
 3. **Performance benchmarking**: Overhead analysis for production deployment
-4. **Security validation**: Tamper resistance against adversarial agents
+4. **Security validation**: System Independence against adversarial agents
 
 ## 8. Limitations and Future Work
 
@@ -368,7 +368,7 @@ Problem statement, approach, key results, and contributions in 200 words.
 * <3% overhead compared to unmonitored systems
 * >95% event capture accuracy
 * <100ms monitoring latency
-* >99% tamper resistance success rate
+* >99% System Independence success rate
 
 **Functionality Targets:**
 * Support for 5+ major agent frameworks
@@ -399,7 +399,7 @@ The success of this evaluation would establish AgentSight as a foundational tech
 **Key Research Contributions:**
 
 1. **Novel technical approach**: First kernel-level AI agent monitoring system using eBPF
-2. **Tamper-resistant architecture**: Security-focused design for autonomous agents
+2. **system-level architecture**: Security-focused design for autonomous agents
 3. **Comprehensive evaluation framework**: Rigorous methodology for assessing AI observability systems
 4. **Open-source implementation**: Enabling reproducible research and industry adoption
 
@@ -431,13 +431,13 @@ Why the difference matters for research?
 
 **Causal fusion** – Research challenge: merge low-level events with high-level semantic spans into a single timeline so SREs can answer "why my code is not work? what system is it run on and what command have you tried?"
 
-**Tamper resistance** – If prompt-injection turns the agent malicious it may silence its own logs. Out-of-process and kernel level tracing provides an independent audit channel.
+**System Independence** – If prompt-injection turns the agent malicious it may silence its own logs. Out-of-process and kernel level tracing provides an independent audit channel.
 
 In short, AI-agent observability inherits the **unreliable, emergent behaviour** of AI Agents.  Treat the agent runtime as a semi-trusted black box and observe at the system boundary: that's where the and opportunities is.
 
 2. **"Current observability techniques rely on application-level instrumentation"**
 
-Current agent observability techniques rely predominantly on application-level instrumentation—callbacks, middleware hooks, or explicit logging—integrated within each agent framework. While intuitive, this approach suffers three fundamental limitations. First, agent frameworks evolve rapidly, changing prompts, tools, workflow and memory interfaces frequently. They can even modify their self code to create new tools, change prompts and behaviors. Thus, instrumentation embedded within agent codebases incurs significant maintenance overhead. Second, agent runtimes can be tampered with or compromised (e.g., via prompt injection), allowing attackers or buggy behaviors to evade logging entirely.  Fourth, application-level instrumentation cannot reliably capture cross-agent semantics, such as reasoning loops, semantic contradictions, persona shifts, or the behaviors when it's interacting with it's environment, especially when interactions cross process or binary boundaries (e.g., external tools or subprocesses).
+Current agent observability techniques rely predominantly on application-level instrumentation—callbacks, middleware hooks, or explicit logging—integrated within each agent framework. While intuitive, this approach suffers three fundamental limitations. First, agent frameworks evolve rapidly, changing prompts, tools, workflow and memory interfaces frequently. They can even modify their self code to create new tools, change prompts and behaviors. Thus, instrumentation embedded within agent codebases incurs significant maintenance overhead. Second, agent runtimes can be compromised or modified (e.g., via prompt injection), allowing attackers or buggy behaviors to evade logging entirely.  Fourth, application-level instrumentation cannot reliably capture cross-agent semantics, such as reasoning loops, semantic contradictions, persona shifts, or the behaviors when it's interacting with it's environment, especially when interactions cross process or binary boundaries (e.g., external tools or subprocesses).
 
 For security, consider a llm agent first write a bash file with malicious commands (Not exec, safe), and then exec it with basic tool calls (Often allow it). It  needs system wide observability and constrains.
 
@@ -484,7 +484,7 @@ A system‑level eBPF tracer that scoops TLS write buffers and syscalls sidestep
 | Agent mutates its own prompt string before logging | Raw ciphertext leaving the TLS socket |
 | Sub‑process mis‑uses GPU                           | `ioctl` + CUDA driver calls           |
 
-In other words, existing tools solve the "what happened inside my code?" story; kernel‑side tracing can answer "what actually hit the wire and the OS?"—a complementary, harder‑to‑tamper vantage point.
+In other words, existing tools solve the "what happened inside my code?" story; kernel‑side tracing can answer "what actually hit the wire and the OS?"—a complementary, more reliable vantage point.
 
 That gap is wide open for research and open‑source innovation.
 

@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/eunomia-bpf/agentsight)
 
-AgentSight is a observability tool designed specifically for monitoring LLM agent behavior through SSL/TLS traffic interception and process monitoring. Unlike traditional application-level instrumentation, AgentSight observes at the system boundary using eBPF technology, providing tamper-resistant insights into AI agent interactions with minimal performance overhead.
+AgentSight is a observability tool designed specifically for monitoring LLM agent behavior through SSL/TLS traffic interception and process monitoring. Unlike traditional application-level instrumentation, AgentSight observes at the system boundary using eBPF technology, providing comprehensive insights into AI agent interactions with minimal performance overhead.
 
 **✨ Zero Instrumentation Required** - No code changes, no new dependencies, no SDKs. Works with any AI framework or application out of the box.
 
@@ -38,8 +38,6 @@ Visit [http://127.0.0.1:7395](http://127.0.0.1:7395) to view the recorded data.
   <p><em>Real-time metrics visualization showing AI agent memory and CPU usage</em></p>
 </div>
 
-Visit [http://127.0.0.1:7395](http://127.0.0.1:7395) to view the captured data in real-time.
-
 ## 🚀 Why AgentSight?
 
 ### Traditional Observability vs. System-Level Monitoring
@@ -48,7 +46,7 @@ Visit [http://127.0.0.1:7395](http://127.0.0.1:7395) to view the captured data i
 |---------------|----------------------------|------------------------|
 | **Framework Adoption** | ❌ New SDK/proxy for each framework | ✅ Drop-in daemon, no code changes |
 | **Closed-Source Tools** | ❌ Limited visibility into operations | ✅ Complete visibility into prompts & behaviors |
-| **Dynamic Agent Behavior** | ❌ Logs can be silenced or manipulated | ✅ Kernel-level hooks, tamper-resistant |
+| **Dynamic Agent Behavior** | ❌ Logs can be silenced or manipulated | ✅ Kernel-level hooks for reliable monitoring |
 | **Encrypted Traffic** | ❌ Only sees wrapper outputs | ✅ Captures real unencrypted requests/responses |
 | **System Interactions** | ❌ Misses subprocess executions | ✅ Tracks all process behaviors & file operations |
 | **Multi-Agent Systems** | ❌ Isolated per-process tracing | ✅ Global correlation and analysis |
@@ -68,11 +66,11 @@ AgentSight captures critical interactions that application-level tools miss:
 │   ┌─────────────────────────────────────────┐   │
 │   │    Application-Level Observability      │   │
 │   │  (LangSmith, Helicone, Langfuse, etc.)  │   │
-│   │         🔴 Tamper Vulnerable             │   │
+│   │         🔴 Can be bypassed               │   │
 │   └─────────────────────────────────────────┘   │
 │                     ↕ (Can be bypassed)         │
 ├─────────────────────────────────────────────────┤ ← System Boundary
-│  🟢 AgentSight eBPF Monitoring (Tamper-proof)   │
+│  🟢 AgentSight eBPF Monitoring (Kernel-level)   │
 │  ┌─────────────────┐  ┌─────────────────────┐   │
 │  │   SSL Traffic   │  │    Process Events   │   │
 │  │   Monitoring    │  │    Monitoring       │   │
@@ -106,10 +104,9 @@ AgentSight captures critical interactions that application-level tools miss:
    - **Event System**: Standardized event format with rich metadata and JSON payloads
 
 3. **Frontend Visualization** (React/TypeScript)
-   - **Timeline View**: Interactive event timeline with zoom and filtering
-   - **Process Tree**: Hierarchical process visualization with lifecycle tracking
-   - **Log View**: Raw event inspection with syntax highlighting
-   - **Real-time Updates**: Live data streaming and analysis
+   - Interactive timeline, process tree, and log views
+   - Real-time data streaming and analysis
+   - See "Web Interface Access" section for details
 
 ### Data Flow Pipeline
 
@@ -131,44 +128,15 @@ eBPF Programs → JSON Events → Runners → Analyzer Chain → Frontend/Storag
 
 #### Option 1: Using Docker (Recommended)
 
+AgentSight runs in Docker with `--privileged` for eBPF, `--pid=host` to access host processes, `-v /sys:/sys:ro` for process monitoring, and `-v /usr:/usr:ro -v /lib:/lib:ro` for SSL library access (required to attach uprobes to shared libraries like `libssl.so`). Example:
+
 ```bash
-# Pull the latest Docker image
-docker pull ghcr.io/eunomia-bpf/agentsight:latest
-
-# Or build locally
-git clone https://github.com/eunomia-bpf/agentsight.git --recursive
-cd agentsight
-make build  # Build the agentsight binary first
-docker build -t agentsight:local -f dockerfile .
-```
-
-Run with Docker:
-```bash
-# Basic monitoring with web UI (access at http://localhost:7395)
-docker run --privileged --pid=host -p 7395:7395 -v /sys:/sys:ro \
-  ghcr.io/eunomia-bpf/agentsight:latest record --comm claude
-
-# Monitor Python AI tools (requires library mounts for SSL capture)
 docker run --privileged --pid=host --network=host \
-  -v /sys:/sys:ro -v /lib:/lib:ro -v /usr/lib:/usr/lib:ro \
-  ghcr.io/eunomia-bpf/agentsight:latest record --comm python3
-
-# Save logs to host directory
-docker run --privileged --pid=host -p 7395:7395 -v /sys:/sys:ro \
+  -v /sys:/sys:ro -v /usr:/usr:ro -v /lib:/lib:ro \
   -v $(pwd)/logs:/logs \
-  ghcr.io/eunomia-bpf/agentsight:latest record --comm node --log-file /logs/record.log
-
-# Use custom port
-docker run --privileged --pid=host -p 8080:8080 -v /sys:/sys:ro \
-  ghcr.io/eunomia-bpf/agentsight:latest record --comm claude --server-port 8080
+  ghcr.io/eunomia-bpf/agentsight:latest \
+  record --comm claude --log-file /logs/record.log
 ```
-
-**Docker Requirements:**
-- `--privileged`: Required for eBPF (loads kernel programs)
-- `--pid=host`: Access host processes for monitoring
-- `-v /sys:/sys:ro`: Read-only access to kernel interfaces
-- `-v /lib:/lib:ro -v /usr/lib:/usr/lib:ro`: Required for Python SSL monitoring in docker (eBPF needs to read shared libraries to attach uprobes)
-- `-p 7395:7395` or `--network=host`: Expose web UI port (default: 7395)
 
 #### Option 2: Build from Source
 
@@ -192,16 +160,14 @@ make build
 
 ### Usage Examples
 
-#### Basic Monitoring
+#### Advanced Monitoring
 
 ```bash
-# Monitor all SSL traffic from system applications
-sudo ./agentsight record -c "python"  # For Python AI tools
-sudo ./agentsight record -c "claude"  # For Claude Code
-sudo ./agentsight record -c "node"    # For Node.js AI tools like gemini-cli
-
 # Combined SSL and process monitoring with web interface
 sudo ./agentsight trace --ssl --process --server
+
+# Custom port and log file
+sudo ./agentsight record -c "python" --server-port 8080 --log-file /tmp/agent.log
 ```
 
 #### NVM Node.js Applications
@@ -231,51 +197,24 @@ All monitoring commands with `--server` flag provide web visualization at:
 - **Process Tree**: http://127.0.0.1:7395/tree
 - **Raw Logs**: http://127.0.0.1:7395/logs
 
-#### Testing with Python Scripts
-
-To test AgentSight with Python scripts inside containers (like `script/test-python/test_openai.py`):
-
-```bash
-# 1. Start AgentSight in Docker (captures SSL traffic from host Python processes)
-docker run --privileged --pid=host --network=host \
-  -v /sys:/sys:ro -v /lib:/lib:ro -v /usr/lib:/usr/lib:ro \
-  -v $(pwd)/logs:/logs \
-  ghcr.io/eunomia-bpf/agentsight:latest \
-  record --comm python3 --log-file /logs/capture.log
-
-# 2. In another terminal, run your Python script on the host
-python3 your_script.py
-
-# 3. View captured traffic at http://localhost:7395 or check logs/capture.log
-```
-
-**Why library mounts are needed:**
-- Python uses dynamically-linked SSL libraries (`libssl.so.3`, `libcrypto.so.3`)
-- eBPF uprobes need to read these libraries from `/lib` and `/usr/lib` to attach to SSL functions
-- With `--pid=host`, the container monitors host processes but needs access to host libraries
-
-**Alternative: Run agentsight directly on host** (simpler for testing):
-```bash
-sudo ./agentsight record --comm python3 --server-port 7395
-```
 
 ## ❓ Frequently Asked Questions
 
 ### General
 
-**Q: How does AgentSight differ from traditional APM tools?**  
-A: AgentSight operates at the kernel level using eBPF, providing tamper-resistant monitoring that agents cannot bypass. Traditional APM requires instrumentation that can be compromised.
+**Q: How does AgentSight differ from traditional APM tools?**
+A: AgentSight operates at the kernel level using eBPF, providing system-level monitoring that is independent of application code. Traditional APM requires instrumentation that can be modified or disabled.
 
-**Q: What's the performance impact?**  
-A: Minimal impact (<3% CPU overhead). eBPF runs in kernel space with optimized data collection.
+**Q: What's the performance impact?**
+A: Less than 3% CPU overhead due to optimized eBPF kernel-space data collection.
 
 **Q: Can agents detect they're being monitored?**  
 A: Detection is extremely difficult since monitoring occurs at the kernel level without code modification.
 
 ### Technical
 
-**Q: Which Linux distributions are supported?**  
-A: Any distribution with kernel 4.1+ and eBPF support. Tested on Ubuntu 20.04+, CentOS 8+, RHEL 8+.
+**Q: Which Linux distributions are supported?**
+A: Any distribution with kernel 4.1+ (5.0+ recommended). Tested on Ubuntu 20.04+, CentOS 8+, RHEL 8+.
 
 **Q: Can I monitor multiple agents simultaneously?**  
 A: Yes, use combined monitoring modes for concurrent multi-agent observation with correlation.
@@ -283,33 +222,27 @@ A: Yes, use combined monitoring modes for concurrent multi-agent observation wit
 **Q: How do I filter sensitive data?**  
 A: Built-in analyzers can remove authentication headers and filter specific content patterns.
 
-**Q: Why doesn't AgentSight capture traffic from my NVM Node.js application?**  
-A: NVM Node.js binaries statically link OpenSSL instead of using system libraries. Use the `--binary-path` option to attach directly to your Node.js binary: `--binary-path ~/.nvm/versions/node/v20.0.0/bin/node`
+**Q: Why doesn't AgentSight capture traffic from my NVM Node.js application?**
+A: NVM Node.js binaries statically link OpenSSL instead of using system libraries. See the "NVM Node.js Applications" section for `--binary-path` usage examples.
 
 ### Troubleshooting
 
 **Q: "Permission denied" errors**  
 A: Ensure you're running with `sudo` or have `CAP_BPF` and `CAP_SYS_ADMIN` capabilities.
 
-**Q: "Failed to load eBPF program" errors**  
-A: Check kernel version and eBPF support. Update vmlinux.h for your architecture if needed.
+**Q: "Failed to load eBPF program" errors**
+A: Verify kernel version meets requirements (see Prerequisites). Update vmlinux.h for your architecture if needed.
 
 
 ## 🤝 Contributing
 
-We welcome contributions! See our development setup:
+We welcome contributions! After cloning and building (see Installation above), you can:
 
 ```bash
-# Clone with submodules
-git clone --recursive https://github.com/eunomia-bpf/agentsight.git
-
-# Install development dependencies  
-make install
-
 # Run tests
 make test
 
-# Frontend development
+# Frontend development server
 cd frontend && npm run dev
 
 # Build debug versions with AddressSanitizer
@@ -328,4 +261,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**💡 The Future of AI Observability**: As AI agents become more autonomous and capable of self-modification, traditional observability approaches become insufficient. AgentSight provides the independent, tamper-resistant monitoring foundation needed for safe AI deployment at scale.
+**💡 The Future of AI Observability**: As AI agents become more autonomous and capable of self-modification, traditional observability approaches become insufficient. AgentSight provides independent, system-level monitoring for safe AI deployment at scale.

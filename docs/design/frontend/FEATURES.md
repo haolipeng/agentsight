@@ -38,7 +38,7 @@
 - No code changes required - works with any AI agent framework
 - Captures encrypted traffic before encryption
 - Monitors subprocess execution and file system access
-- Tamper-resistant monitoring that agents cannot disable
+- Independent system-level monitoring at kernel boundary
 
 ### **Cross-Agent Visibility**
 - Track coordination between multiple agents

@@ -284,7 +284,7 @@ let process_path = binary_extractor.get_process_path();
 ## Security
 
 - **Root Privileges**: eBPF programs require root access for kernel monitoring
-- **Tamper Resistant**: System-level monitoring prevents agent manipulation
+- **Independent Monitoring**: System-level observation operates independently of application code
 - **Data Sensitivity**: SSL traffic may contain sensitive information
 - **Secure Cleanup**: Automatic cleanup of temporary files and processes
 

@@ -863,7 +863,7 @@ This case study showcases AgentSight's distinctive advantages over traditional m
 
 1. **Cross-Process Boundary Tracing**: Captured coordination patterns spanning multiple AI agents and processes
 2. **System-Level Observability**: Monitored file system interactions, network communications, and process relationships
-3. **Tamper-Resistant Monitoring**: eBPF-based observation that agents cannot manipulate or avoid
+3. **Independent Kernel-Level Monitoring**: eBPF-based observation operating independently of application code
 4. **Real-Time Coordination Analysis**: Live detection of bottlenecks and inefficiencies during multi-agent collaboration
 
 ## Production Multi-Agent Monitoring

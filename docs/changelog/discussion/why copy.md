@@ -26,13 +26,13 @@ Why the difference matters for research?
 
 **Causal fusion** – Research challenge: merge low-level events with high-level semantic spans into a single timeline so SREs can answer “why my code is not work? what system is it run on and what command have you tried?”
 
-**Tamper resistance** – If prompt-injection turns the agent malicious it may silence its own logs. Out-of-process and kernel level tracing provides an independent audit channel.
+**System-level monitoring** – If prompt-injection turns the agent malicious it may silence its own logs. Out-of-process and kernel level tracing provides an independent audit channel.
 
 In short, AI-agent observability inherits the **unreliable, emergent behaviour** of AI Agents.  Treat the agent runtime as a semi-trusted black box and observe at the system boundary: that’s where the and opportunities is.
 
 1. **“Current observability techniques rely on application-level instrumentation”**
 
-Current agent observability techniques rely predominantly on application-level instrumentation—callbacks, middleware hooks, or explicit logging—integrated within each agent framework. While intuitive, this approach suffers three fundamental limitations. First, agent frameworks evolve rapidly, changing prompts, tools, workflow and memory interfaces frequently. They can even modify their self code to create new tools, change prompts and behaviors. Thus, instrumentation embedded within agent codebases incurs significant maintenance overhead. Second, agent runtimes can be tampered with or compromised (e.g., via prompt injection), allowing attackers or buggy behaviors to evade logging entirely.  Fourth, application-level instrumentation cannot reliably capture cross-agent semantics, such as reasoning loops, semantic contradictions, persona shifts, or the behaviors when it’s interacting with it’s environment, especially when interactions cross process or binary boundaries (e.g., external tools or subprocesses).
+Current agent observability techniques rely predominantly on application-level instrumentation—callbacks, middleware hooks, or explicit logging—integrated within each agent framework. While intuitive, this approach suffers three fundamental limitations. First, agent frameworks evolve rapidly, changing prompts, tools, workflow and memory interfaces frequently. They can even modify their self code to create new tools, change prompts and behaviors. Thus, instrumentation embedded within agent codebases incurs significant maintenance overhead. Second, agent runtimes can be compromised or modified (e.g., via prompt injection), allowing attackers or buggy behaviors to evade logging entirely.  Fourth, application-level instrumentation cannot reliably capture cross-agent semantics, such as reasoning loops, semantic contradictions, persona shifts, or the behaviors when it’s interacting with it’s environment, especially when interactions cross process or binary boundaries (e.g., external tools or subprocesses).
 
 For security, consider a llm agent first write a bash file with malicious commands (Not exec, safe), and then exec it with basic tool calls (Often allow it). It  needs system wide observability and constrains.
 
@@ -79,7 +79,7 @@ A system‑level eBPF tracer that scoops TLS write buffers and syscalls sidestep
 | Agent mutates its own prompt string before logging | Raw ciphertext leaving the TLS socket |
 | Sub‑process mis‑uses GPU                           | `ioctl` + CUDA driver calls           |
 
-In other words, existing tools solve the “what happened inside my code?” story; kernel‑side tracing can answer “what actually hit the wire and the OS?”—a complementary, harder‑to‑tamper vantage point.
+In other words, existing tools solve the “what happened inside my code?” story; kernel‑side tracing can answer “what actually hit the wire and the OS?”—a complementary, more reliable vantage point.
 
 That gap is wide open for research and open‑source innovation.
 

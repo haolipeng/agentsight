@@ -68,7 +68,7 @@ This analysis compares the AgentSight implementation described in the paper with
 - Implementation includes benchmarking tools to validate these claims
 
 ### Security Features
-- Tamper-resistant monitoring via kernel boundary as described
+- System-level monitoring via kernel boundary as described
 - eBPF safety guarantees implemented correctly
 
 ### Multi-Signal Correlation

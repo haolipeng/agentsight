@@ -177,7 +177,7 @@ TECHNICAL FOCUS:
 
 AGENTSIGHT CONTEXT:
 - Audit across all components: eBPF, Rust collector, Next.js frontend
-- Review tamper-resistant monitoring design principles
+- Review system-level monitoring design principles
 - Analyze data flow from kernel space to user interface
 - Evaluate embedded binary extraction security
 - Assess real-time streaming performance characteristics

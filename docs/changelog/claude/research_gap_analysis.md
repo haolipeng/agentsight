@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This analysis examines the current state of eBPF-based observability solutions and LLM agent monitoring tools in the open-source and research communities. While both domains are rapidly evolving, there exists a significant gap at their intersection - specifically in the application of eBPF technology for tamper-resistant, kernel-level monitoring of AI agents.
+This analysis examines the current state of eBPF-based observability solutions and LLM agent monitoring tools in the open-source and research communities. While both domains are rapidly evolving, there exists a significant gap at their intersection - specifically in the application of eBPF technology for system-level, kernel-level monitoring of AI agents.
 
 ## Current State of eBPF Observability (OSS)
 
@@ -50,7 +50,7 @@ This analysis examines the current state of eBPF-based observability solutions a
 
 ### Academic Research (2024)
 - **OpenTelemetry Standards**: Active development of AI agent semantic conventions
-- **Tamper-Resistant Safeguards**: Research on protecting open-weight LLMs
+- **Security Safeguards**: Research on protecting open-weight LLMs
 - **Multi-AI Agent Security**: Fujitsu's collaborative security technology
 - **Agent Visibility Measures**: Proposals for agent identifiers, real-time monitoring, and activity logs
 
@@ -62,7 +62,7 @@ This analysis examines the current state of eBPF-based observability solutions a
 ## Critical Gaps Identified
 
 ### 1. System-Level AI Agent Monitoring
-**Gap**: Lack of kernel-level, tamper-resistant monitoring solutions specifically designed for AI agents.
+**Gap**: Lack of kernel-level, system-level monitoring solutions specifically designed for AI agents.
 
 **Current State**: 
 - Existing LLM observability tools operate at the application layer
@@ -72,7 +72,7 @@ This analysis examines the current state of eBPF-based observability solutions a
 **Impact**: 
 - AI agents can potentially evade application-level monitoring
 - Limited visibility into system-level AI agent behavior
-- Vulnerability to tampering and manipulation
+- Vulnerability to modification and manipulation
 
 ### 2. Standardized eBPF-AI Integration
 **Gap**: Absence of standardized frameworks for integrating eBPF monitoring with AI agent workflows.
@@ -87,11 +87,11 @@ This analysis examines the current state of eBPF-based observability solutions a
 - Difficulty in creating comprehensive AI observability solutions
 - Vendor lock-in and compatibility issues
 
-### 3. Tamper-Resistant AI Monitoring
-**Gap**: Insufficient development of tamper-proof monitoring systems for autonomous AI agents.
+### 3. Independent AI Monitoring
+**Gap**: Insufficient development of kernel-level monitoring systems for autonomous AI agents.
 
 **Current State**:
-- Research on tamper-resistant AI safeguards is emerging
+- Research on system-level AI safeguards is emerging
 - Most monitoring solutions can be circumvented by sophisticated agents
 - Limited focus on security-oriented AI observability
 
@@ -133,7 +133,7 @@ This analysis examines the current state of eBPF-based observability solutions a
 
 **Potential Impact**:
 - Kernel-level visibility into AI agent operations
-- Tamper-resistant monitoring capabilities
+- system-level monitoring capabilities
 - Low-overhead system integration
 - Real-time behavior analysis and intervention
 
@@ -167,7 +167,7 @@ This analysis examines the current state of eBPF-based observability solutions a
 ## Competitive Landscape Analysis
 
 ### Advantages of eBPF-Based Approach
-- **Tamper Resistance**: Kernel-level operation makes circumvention difficult
+- **System Independence**: Kernel-level operation makes circumvention difficult
 - **Performance**: Minimal overhead compared to application-level monitoring
 - **Comprehensiveness**: Visibility into all system interactions
 - **Language Agnostic**: Works regardless of AI agent implementation language
@@ -184,7 +184,7 @@ The intersection of eBPF and AI agent monitoring represents a blue ocean opportu
 
 ### For Researchers
 1. **Focus on System-Level AI Behavior**: Investigate kernel-level patterns of AI agent behavior
-2. **Develop Security-First Approaches**: Prioritize tamper-resistant monitoring mechanisms
+2. **Develop Security-First Approaches**: Prioritize system-level monitoring mechanisms
 3. **Create Standardization Frameworks**: Contribute to OpenTelemetry AI semantic conventions
 4. **Explore Real-Time Intervention**: Research autonomous response mechanisms for AI safety
 
@@ -204,7 +204,7 @@ The intersection of eBPF and AI agent monitoring represents a blue ocean opportu
 
 The convergence of eBPF technology and AI agent observability represents a critical frontier in AI safety and security. While both domains have seen significant advancement individually, their intersection remains largely unexplored, presenting substantial opportunities for research, development, and commercial innovation.
 
-The AgentSight project represents a pioneering effort in this space, positioning itself at the forefront of kernel-level AI agent monitoring. By addressing the identified gaps through eBPF-based tamper-resistant observability, such initiatives can significantly advance the state of AI safety and security.
+The AgentSight project represents a pioneering effort in this space, positioning itself at the forefront of kernel-level AI agent monitoring. By addressing the identified gaps through eBPF-based system-level observability, such initiatives can significantly advance the state of AI safety and security.
 
 The next 2-3 years will be crucial for establishing foundational technologies, standards, and best practices in this emerging field. Organizations that invest early in eBPF-based AI observability will likely gain significant competitive advantages in the rapidly evolving AI landscape.
 

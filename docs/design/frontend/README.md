@@ -26,7 +26,7 @@ npm run dev
 ### **Zero-Instrumentation Monitoring**
 - Monitor any AI agent framework without code changes
 - System-level visibility via eBPF technology
-- Tamper-resistant observability that agents cannot disable
+- Independent monitoring at kernel level
 
 ### **Real-time Dashboards**
 - Live agent status and performance metrics

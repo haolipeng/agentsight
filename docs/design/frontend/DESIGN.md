@@ -9,7 +9,7 @@ AgentSight is a zero-instrumentation AI observability platform powered by eBPF t
 ### Core Differentiation
 Unlike application-level observability tools (LangSmith, Helicone, Langfuse), AgentSight observes AI agents from the **system boundary**, providing:
 
-- **Tamper-resistant monitoring** - Agents cannot disable or manipulate system-level traces
+- **Independent system-level monitoring** - Operates at kernel level, independent of application code
 - **Universal compatibility** - Works with any AI agent framework without code changes
 - **Environment interaction visibility** - Captures subprocess execution, file operations, network calls
 - **Complete conversation reconstruction** - Intercepts encrypted TLS traffic before encryption

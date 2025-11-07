@@ -189,7 +189,7 @@ The architecture reveals two stable observation boundaries:
 
 **Network Boundary**: All agent-LLM communications traverse the network interface as TLS-encrypted HTTP requests. Despite encryption, eBPF uprobes on SSL library functions (SSL_write/SSL_read) can intercept data post-encryption at the application layer, capturing prompts, responses, and API parameters.
 
-**Kernel Boundary**: All system interactions—process creation, file operations, network connections—must invoke kernel system calls. These syscalls provide a tamper-proof observation point that captures agent system behavior regardless of implementation language or framework.
+**Kernel Boundary**: All system interactions—process creation, file operations, network connections—must invoke kernel system calls. These syscalls provide a kernel-level observation point that captures agent system behavior regardless of implementation language or framework.
 
 ### 4.3 Advantages of Boundary Tracing
 
