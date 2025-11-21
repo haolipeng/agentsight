@@ -236,7 +236,12 @@ static int ex_SSL_exit(struct pt_regs *ctx, int rw, int len) {
     data->buf_size = 0;
     data->rw = rw;
     data->is_handshake = false;
-    u32 buf_copy_size = min((size_t)MAX_BUF_SIZE, (size_t)len);
+    
+    /* Explicit bounds clamping to satisfy eBPF verifier
+     * Use bitmask first to ensure value range, then clamp to actual max */
+    u32 buf_copy_size = (u32)len & 0xFFFFF;  /* Mask to 20 bits (1MB-1) */
+    if (buf_copy_size > MAX_BUF_SIZE)
+        buf_copy_size = MAX_BUF_SIZE;
 
     bpf_get_current_comm(&data->comm, sizeof(data->comm));
 
